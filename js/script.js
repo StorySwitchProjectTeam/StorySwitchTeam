@@ -66,7 +66,12 @@ function showchoice(video) {
     choix_list.innerHTML = "";  // Enlève les anciens choix
     choix_list.className = "";
     url_zone.play();
-    if (!data_film[video].choix) return;  // Sort de la fonction si la vidéo n'a pas de choix
+    
+    if (!data_film[video].choix) {
+        url_zone.addEventListener("ended", () => {
+            document.querySelector(".black-end").classList.remove("hide-end");
+        })
+    };
 
     url_zone.onloadedmetadata = () => {
         url_zone.addEventListener("timeupdate", function videoduration() {
