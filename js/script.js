@@ -93,7 +93,6 @@ function showchoice(video) {
                 document.documentElement.style.setProperty('--timerduration', (data_film[video].duree_choix) + "s");
                 choix_list.classList.add("timeranim");
 
-
                 Object.values(data_film[video].choix).forEach((elt) => {
                     let choix = document.createElement('button');
                     choix.innerText = elt[0];
@@ -126,4 +125,5 @@ url_zone.addEventListener('ended', () => {
     }
 })
 
+url_zone.controls = false;
 loadintro();
