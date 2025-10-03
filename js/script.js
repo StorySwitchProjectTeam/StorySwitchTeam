@@ -67,15 +67,16 @@ function showchoice(video) {
     choix_list.className = "";
     url_zone.play();
     if (!data_film[video].choix) return;  // Sort de la fonction si la vidéo n'a pas de choix
-    
+
     url_zone.onloadedmetadata = () => {
         url_zone.addEventListener("timeupdate", function videoduration() {
             let videoTime = url_zone.duration - url_zone.currentTime;
-            
+
             if (videoTime <= data_film[video].duree_choix) {
                 choix_list.classList.add("choice");
-                document.documentElement.style.setProperty('--timerduration', (data_film[video].duree_choix)+"s");
+                document.documentElement.style.setProperty('--timerduration', (data_film[video].duree_choix) + "s");
                 choix_list.classList.add("timeranim");
+
 
                 Object.values(data_film[video].choix).forEach((elt) => {
                     let choix = document.createElement('button');
@@ -87,6 +88,16 @@ function showchoice(video) {
                 });
                 url_zone.removeEventListener("timeupdate", videoduration);
             };
+            url_zone.addEventListener("ended", () => {
+                let cles = Object.keys(data_film);
+
+                let cleAleatoire = cles[Math.floor(Math.random() * cles.length)];
+
+                playvideo(cleAleatoire);
+            })
+
+
+
         });
     };
 };
