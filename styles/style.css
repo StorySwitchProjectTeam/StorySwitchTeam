@@ -43,6 +43,10 @@ body {
     z-index: 5;
 }
 
+.hide-end {
+    display: none;
+}
+
 .begin {
     transition: .4s;
 }

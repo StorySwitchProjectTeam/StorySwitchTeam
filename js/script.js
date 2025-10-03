@@ -93,6 +93,7 @@ function showchoice(video) {
                 });
                 url_zone.removeEventListener("timeupdate", videoduration);
             };
+            
             url_zone.addEventListener("ended", () => {
                 let cles = Object.keys(data_film);
 
