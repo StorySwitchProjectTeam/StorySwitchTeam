@@ -3,6 +3,8 @@ let start_zone = document.querySelector('.black-overlay');
 let url_zone = document.querySelector('#url_zone');
 let choix_list = document.querySelector('.choice');
 
+let currentVideo = "intro";
+
 // Data temporaire pour les phases de test
 let data_film = {
     'intro': {
@@ -54,6 +56,22 @@ function starting() {
     url_zone.play();
 }
 
+// ///////////////////////////////////////////
+// ||  Joue une vidéo
+// ||                   
+// ||   Input:
+// ||     -> video : str
+// ||
+// ||   Output:
+// ///////////////////////////////////////////
+function playvideo(video) {
+    currentVideo = video;
+    choix_list.innerHTML = "";
+    url_zone.src = data_film[video].url;
+    url_zone.play();
+    showchoice(video);
+}
+
 // /////////////////////////////////////
 // ||  Charge les choix de la vidéo
 // ||                   
@@ -65,13 +83,6 @@ function starting() {
 function showchoice(video) {
     choix_list.innerHTML = "";  // Enlève les anciens choix
     choix_list.className = "";
-    url_zone.play();
-    
-    if (!data_film[video].choix) {
-        url_zone.addEventListener("ended", () => {
-            document.querySelector(".black-end").classList.remove("hide-end");
-        })
-    };
 
     url_zone.onloadedmetadata = () => {
         url_zone.addEventListener("timeupdate", function videoduration() {
@@ -93,33 +104,26 @@ function showchoice(video) {
                 });
                 url_zone.removeEventListener("timeupdate", videoduration);
             };
-            
-            url_zone.addEventListener("ended", () => {
-                let cles = Object.keys(data_film);
-
-                let cleAleatoire = cles[Math.floor(Math.random() * cles.length)];
-
-                playvideo(cleAleatoire);
-            })
-
-
-
         });
     };
-};
-
-// ///////////////////////////////////////////
-// ||  Joue une vidéo
-// ||                   
-// ||   Input:
-// ||     -> video : str
-// ||
-// ||   Output:
-// ///////////////////////////////////////////
-function playvideo(video) {
-    choix_list.innerHTML = "";
-    url_zone.src = data_film[video].url;
-    showchoice(video);
 }
+
+
+
+url_zone.addEventListener('ended', () => {
+    let choix = data_film[currentVideo];
+
+    if (!choix || !choix.choix) {
+        document.querySelector(".black-end").classList.remove("hide-end");
+        return;
+    }
+    if (choix) {
+        let cles = Object.keys(data_film[currentVideo].choix);
+        if (!cles.length) return;
+        let cleAleatoire = cles[Math.floor(Math.random() * cles.length)];
+        let nextVideo = data_film[currentVideo].choix[cleAleatoire][1];
+        playvideo(nextVideo);
+    }
+})
 
 loadintro();
