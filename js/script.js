@@ -2,6 +2,7 @@ let start = document.querySelector('.begin');
 let start_zone = document.querySelector('.black-overlay');
 let url_zone = document.querySelector('#url_zone');
 let choix_list = document.querySelector('.choice');
+let pause_btn = document.querySelector('.pause-btn');
 
 let currentVideo = "intro";
 
@@ -34,6 +35,22 @@ let data_film = {
 }
 
 // ///////////////////////////////////////////
+// ||  Met pause quand on clique sur pause
+// ||                   
+// ||   Input:
+// ||
+// ||   Output:
+// ///////////////////////////////////////////
+pause_btn.addEventListener('click', ()=>{
+    if(url_zone.paused) {
+        url_zone.play();
+    }
+    else {
+        url_zone.pause();
+    }
+})
+
+// ///////////////////////////////////////////
 // ||  Charge la vidéo intro (1ere video)
 // ||                   
 // ||   Input:
@@ -44,8 +61,8 @@ function loadintro() {
     if (!url_zone.src) {
         url_zone.src = data_film['intro'].url;
         showchoice('intro');
-    }
-}
+    };
+};
 
 // ///////////////////////////////////////////
 // //Lance la vidéo quand on appuie sur start/
@@ -54,7 +71,7 @@ start.addEventListener('click', starting);
 function starting() {
     start_zone.remove();
     url_zone.play();
-}
+};
 
 // ///////////////////////////////////////////
 // ||  Joue une vidéo
@@ -70,7 +87,7 @@ function playvideo(video) {
     url_zone.src = data_film[video].url;
     url_zone.play();
     showchoice(video);
-}
+};
 
 // /////////////////////////////////////
 // ||  Charge les choix de la vidéo
@@ -105,7 +122,7 @@ function showchoice(video) {
             };
         });
     };
-}
+};
 
 
 
@@ -115,15 +132,15 @@ url_zone.addEventListener('ended', () => {
     if (!choix || !choix.choix) {
         document.querySelector(".black-end").classList.remove("hide-end");
         return;
-    }
+    };
     if (choix) {
         let cles = Object.keys(data_film[currentVideo].choix);
         if (!cles.length) return;
         let cleAleatoire = cles[Math.floor(Math.random() * cles.length)];
         let nextVideo = data_film[currentVideo].choix[cleAleatoire][1];
         playvideo(nextVideo);
-    }
-})
+    };
+});
 
-url_zone.controls = false;
+url_zone.controls = false; // Retire les fonctions de base
 loadintro();
