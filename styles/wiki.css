@@ -1,0 +1,91 @@
+body {
+    margin: 0;
+    background: #333337;
+    font-family: Helvetica;
+}
+
+* {
+    color: #F2F2F2;
+}
+
+header {
+    margin-left: 0;
+    margin-right: 0;
+    height: 100px;
+    border-bottom: solid 2px #F2F2F2;
+}
+
+main {
+    display: flex;
+}
+
+.menu_wiki {
+    width: 350px;
+    background: #2F2A2A;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: 0px;
+    border-right: solid 2px #F2F2F2;
+}
+
+.menu_liste {
+    display: flex;
+    margin: 10px 30px 10px 30px;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.element_liste {
+    padding: 15px;
+    border-radius:  10px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.element_liste:hover {
+    background: #5863FF20;
+}
+
+.element_liste_open {
+    background: #5863FF !important;;
+}
+
+.element_liste svg {
+    width: 40px;
+}
+
+.element_sous_liste {
+    margin-left: 30px;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.element_sous_liste li {
+    position: relative;
+    transition: all 0.2s ease;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+
+.element_sous_liste li::after {
+    content: "";
+    background: #5863FF;
+    position: absolute;
+    width: 0;
+    height: 3px;
+    bottom: 0;
+    left: 0;
+    transition: width 0.4s ease;
+}
+
+.element_sous_liste li:hover::after {
+    width: 100%;
+}
+
+.right_main {
+    margin: 40px 100px 100px 100px;
+}
