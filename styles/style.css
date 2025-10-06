@@ -107,3 +107,10 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+
+.pause-btn {
+    padding: 8px 32px 4px 32px;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
