@@ -31,3 +31,9 @@ listes.forEach(function(liste) {
         }
     });
 });
+
+li.forEach(function(sous) {
+    li.addEventListener("click", function() {
+        
+    })
+})

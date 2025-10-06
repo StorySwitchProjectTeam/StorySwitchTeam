@@ -55,8 +55,8 @@ main {
 }
 
 .element_liste span {
-    width: 40px;
     transition: 0.2s ease;
+    display: inline-block;
 }
 
 span svg {
@@ -64,6 +64,7 @@ span svg {
 }
 
 .open_span {
+    transform-origin: center;
     transform: rotate(90deg);
 }
 
