@@ -30,7 +30,8 @@ let data_film = {
     },
 
     'tuto2': {
-        'url': 'video/2.mp4'
+        'url': 'video/2.mp4',
+        'duree': 5000
     }
 }
 
@@ -41,14 +42,32 @@ let data_film = {
 // ||
 // ||   Output:
 // ///////////////////////////////////////////
-pause_btn.addEventListener('click', ()=>{
-    if(url_zone.paused) {
+let playing_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333337" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>';
+let paused_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333337" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+
+pause_btn.addEventListener('click', () => {
+    if (url_zone.paused) {
         url_zone.play();
+        pause_btn.innerHTML = playing_svg;
     }
     else {
         url_zone.pause();
+        pause_btn.innerHTML = paused_svg;
     }
 })
+
+window.addEventListener('keydown', (event) => {
+    if (event.keyCode == 32) {
+        if (url_zone.paused) {
+            url_zone.play();
+            pause_btn.innerHTML = playing_svg;
+        }
+        else {
+            url_zone.pause();
+            pause_btn.innerHTML = paused_svg;
+        }
+    }
+});
 
 // ///////////////////////////////////////////
 // ||  Charge la vidéo intro (1ere video)
@@ -124,8 +143,6 @@ function showchoice(video) {
     };
 };
 
-
-
 url_zone.addEventListener('ended', () => {
     let choix = data_film[currentVideo];
 
@@ -133,6 +150,11 @@ url_zone.addEventListener('ended', () => {
         document.querySelector(".black-end").classList.remove("hide-end");
         return;
     };
+});
+
+choix_list.addEventListener('animationend', () => {
+    let choix = data_film[currentVideo];
+
     if (choix) {
         let cles = Object.keys(data_film[currentVideo].choix);
         if (!cles.length) return;
