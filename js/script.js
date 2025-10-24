@@ -1,3 +1,17 @@
+// $$\      $$\ $$\      $$\ $$$$$$\       $$$$$$$\  $$$$$$$$\ $$\    $$\   $$\   
+// $$$\    $$$ |$$$\    $$$ |\_$$  _|      $$  __$$\ $$  _____|$$ |   $$ |$$$$ |  
+// $$$$\  $$$$ |$$$$\  $$$$ |  $$ |        $$ |  $$ |$$ |      $$ |   $$ |\_$$ |  
+// $$\$$\$$ $$ |$$\$$\$$ $$ |  $$ |        $$ |  $$ |$$$$$\    \$$\  $$  |  $$ |  
+// $$ \$$$  $$ |$$ \$$$  $$ |  $$ |        $$ |  $$ |$$  __|    \$$\$$  /   $$ |  
+// $$ |\$  /$$ |$$ |\$  /$$ |  $$ |        $$ |  $$ |$$ |        \$$$  /    $$ |  
+// $$ | \_/ $$ |$$ | \_/ $$ |$$$$$$\       $$$$$$$  |$$$$$$$$\    \$  /   $$$$$$\ 
+// \__|     \__|\__|     \__|\______|      \_______/ \________|    \_/    \______|
+// Script made by Michaël VLESIK-SCHMITT | Argjend KALLARI | Emma JOLIVET | Dimitri KNYAZEV
+// Michaël VLESIK-SCHMITT : https://github.com/FroostDev | https://michaelvlesik.fr
+// Argjend KALLLARI : https://github.com/Argjend05 | https://argjendkallari.fr
+// Emma JOLIVET : https://github.com/emmaj2
+// Dimitri KNYAZEV : https://github.com/Sopatrika | https://dimitriknyazev.fr
+
 let start = document.querySelector('.begin');
 let start_zone = document.querySelector('.black-overlay');
 let url_zone = document.querySelector('#url_zone');
