@@ -111,3 +111,16 @@ span svg {
     left: 0;
     transition: width 0.4s ease;
 }
+
+.right_main section {
+    display: none;
+}
+
+.right_main b {
+    font-size: 35px;
+}
+
+.right_main section p {
+    margin-top: 50px;
+    width: 100vh;
+}
