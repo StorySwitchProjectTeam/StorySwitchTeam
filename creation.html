@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur de Nœuds (Film Interactif)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Style de base pour l'éditeur */
+        #editor {
+            width: 2000vw;
+            height: 2000vh;
+            background-color: #2d3748; /* gray-800 */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+            overflow: hidden;
+            touch-action: none; /* Désactiver le pinch-zoom sur mobile */
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+        
+        /* Style pour les nœuds */
+        .node {
+            position: absolute;
+            background-color: #4a5568; /* gray-700 */
+            border: 2px solid #1a202c; /* gray-900 */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            min-width: 220px;
+            z-index: 10;
+        }
+
+        .node-header {
+            padding: 8px 12px;
+            background-color: #2d3748; /* gray-800 */
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .port {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #1a202c; /* gray-900 */
+            flex-shrink: 0; /* Empêcher de rétrécir */
+        }
+
+        .input-port { cursor: pointer; }
+        .output-port { cursor: crosshair; }
+
+        /* Ligne de connexion temporaire */
+        #temp-link {
+            stroke: #e2e8f0; /* gray-300 */
+            stroke-width: 3;
+            stroke-dasharray: 5, 5;
+            fill: none;
+            pointer-events: none;
+        }
+
+        /* Ligne de connexion finale */
+        .link {
+            stroke: #f6e05e; /* yellow-400 */
+            stroke-width: 3;
+            fill: none;
+            cursor: pointer;
+            transition: stroke 0.15s ease-in-out;
+        }
+        .link:hover {
+            stroke: #ef4444; /* red-500 */
+        }
+
+        /* Empêcher le défilement pendant le drag */
+        body.no-scroll { overflow: hidden; }
+
+        /* Styles pour les nouveaux champs de données */
+        .data-field {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 0 12px;
+        }
+        .data-field label {
+            font-size: 0.8rem;
+            color: #cbd5e0; /* gray-400 */
+            margin-right: 8px;
+            min-width: 90px; /* Aligner les inputs */
+        }
+        .data-field input {
+            font-size: 0.8rem;
+            background-color: #2d3748; /* gray-800 */
+            color: white;
+            border: 1px solid #718096; /* gray-500 */
+            border-radius: 4px;
+            padding: 2px 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans h-screen m-0">
+
+    <!-- Interface principale -->
+    <div class="flex flex-col h-screen">
+        
+        <!-- Barre d'outils -->
+        <header class="bg-gray-800 text-white p-2 flex justify-between items-center shadow-md z-20">
+            <h1 class="text-xl font-semibold">Éditeur de Film Interactif</h1>
+            <div class="flex gap-2">
+                <button id="add-node-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Ajouter un Nœud
+                </button>
+                <button id="import-json-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Importer JSON
+                </button>
+                <button id="export-json-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded transition duration-150">
+                    Exporter JSON
+                </button>
+            </div>
+        </header>
+
+        <!-- Zone de l'éditeur -->
+        <main class="flex-1 relative">
+            <div id="editor"></div>
+            <!-- Conteneur pour les lignes SVG -->
+            <svg id="svg-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
+        </main>
+        
+        <!-- Pied de page supprimé (plus d'ID utilisateur) -->
+    </div>
+
+    <!-- Modale pour Exporter/Importer JSON -->
+    <div id="json-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="json-modal-title" class="text-2xl font-bold text-white">JSON</h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+            <textarea id="json-output" class="w-full h-64 bg-gray-900 text-gray-200 font-mono p-2 rounded border border-gray-600"></textarea>
+            <p id="import-error-msg" class="text-red-500 text-sm mt-2"></p>
+            <div class="mt-4 flex justify-end gap-3">
+                <button id="json-modal-confirm-import" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Valider l'Importation
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Imports Firebase (Module) -->
+    <script type="module">
+        // --- Imports Firebase SUPPRIMÉS ---
+
+        // --- Variables Globales ---
+
+        // --- Variables Firebase SUPPRIMÉES ---
+        
+        // État de l'éditeur
+        const editor = document.getElementById('editor');
+        const svgContainer = document.getElementById('svg-container');
+        let graphData = { nodes: {}, links: {} }; // Modèle de données local
+        let nextNodeId = 1; // Compteur local pour les nouveaux nœuds
+
+        // État du Drag-and-Drop
+        let draggedNode = null;
+        let offset = { x: 0, y: 0 };
+        
+        // État de la Création de Lien
+        let startPort = null;
+        let currentLink = null;
+
+        // Éléments DOM
+        const addNodeBtn = document.getElementById('add-node-btn');
+        const exportJsonBtn = document.getElementById('export-json-btn');
+        const importJsonBtn = document.getElementById('import-json-btn');
+        const jsonModal = document.getElementById('json-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const jsonOutput = document.getElementById('json-output');
+        const jsonModalTitle = document.getElementById('json-modal-title');
+        const confirmImportBtn = document.getElementById('json-modal-confirm-import');
+        const importErrorMsg = document.getElementById('import-error-msg');
+        // const userIdDisplay = document.getElementById('user-id-display'); // Supprimé
+
+        // --- Initialisation ---
+
+        /**
+         * Initialise l'application et les écouteurs d'événements.
+         */
+        function initApp() {
+            try {
+                // --- Initialisation Firebase SUPPRIMÉE ---
+                setupEventListeners();
+                console.log("Application initialisée (mode local).");
+            } catch (error) {
+                console.error("Erreur d'initialisation:", error);
+                editor.innerHTML = `<div class="p-4 text-red-400">Erreur critique lors de l'initialisation. Vérifiez la console.</div>`;
+            }
+        }
+
+        // --- Fonction setupAuthentication SUPPRIMÉE ---
+
+        /**
+         * Attache tous les écouteurs d'événements globaux.
+         */
+        function setupEventListeners() {
+            // Boutons
+            addNodeBtn.addEventListener('click', () => addNewNode(50, 50));
+            exportJsonBtn.addEventListener('click', exportGraphToJson);
+            importJsonBtn.addEventListener('click', showImportModal);
+
+            // Modale
+            closeModalBtn.addEventListener('click', () => jsonModal.classList.add('hidden'));
+            confirmImportBtn.addEventListener('click', importGraphFromJson);
+
+            // Éditeur (Drag-and-Drop et Liens)
+            editor.addEventListener('mousedown', startDrag);
+            editor.addEventListener('mousemove', drag);
+            editor.addEventListener('mouseup', endDrag);
+            editor.addEventListener('mouseleave', endDrag); // Arrêter si la souris quitte
+            
+            // Empêcher la sélection de texte pendant le drag
+            editor.addEventListener('selectstart', (e) => e.preventDefault());
+        }
+
+        // --- Gestion Firestore (Sauvegarde et Chargement) ---
+
+        // --- Fonction startFirestoreListeners SUPPRIMÉE ---
+
+        /**
+         * Sauvegarde les données d'un nœud dans le modèle local (graphData)
+         * et déclenche un re-rendu.
+         * @param {Object} nodeData Les données complètes du nœud.
+         */
+        function saveNode(nodeData) {
+            graphData.nodes[nodeData.id] = nodeData;
+            
+            // Re-rendu complet pour refléter les changements (url, choix, etc.)
+            const existingEl = document.getElementById(nodeData.id);
+            if (existingEl) {
+                existingEl.remove();
+            }
+            renderNode(nodeData); 
+            updateAllLinks(); // Mettre à jour les liens vers ce nœud
+        }
+
+        /**
+         * Sauvegarde les données d'un lien dans le modèle local (graphData)
+         * et déclenche un re-rendu.
+         * @param {Object} linkData Les données complètes du lien.
+         */
+        function saveLink(linkData) {
+            graphData.links[linkData.id] = linkData;
+            renderLink(linkData);
+        }
+
+        // --- Fonctions de Nœuds (Création et Rendu) ---
+
+        /**
+         * Crée l'élément DOM d'un nœud.
+         * @param {Object} nodeData Les données du nœud.
+         * @returns {HTMLElement} L'élément DOM du nœud.
+         */
+        function createNodeElement(nodeData) {
+            const nodeEl = document.createElement('div');
+            nodeEl.id = nodeData.id;
+            nodeEl.className = 'node';
+
+            // En-tête (pour le drag et le renommage)
+            const header = document.createElement('div');
+            header.className = 'node-header text-white font-semibold text-lg cursor-move';
+            header.textContent = nodeData.name;
+            nodeEl.appendChild(header);
+
+            // --- Logique de Renommage du Nœud (double-clic) ---
+            header.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                if (draggedNode) return; // Ne pas renommer pendant un drag
+
+                header.classList.add('hidden');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = nodeData.name;
+                input.className = 'bg-gray-900 text-white font-semibold text-lg w-full rounded border border-blue-500 p-0.5 m-2 box-border';
+                
+                const saveRename = () => { // Plus besoin d'async
+                    const newName = input.value.trim();
+                    if (newName && newName !== nodeData.name) {
+                        // Vérifier si le nom existe déjà
+                        const nameExists = Object.values(graphData.nodes).some(n => n.name === newName && n.id !== nodeData.id);
+                        if (nameExists) {
+                            console.warn("Erreur: Ce nom de nœud est déjà utilisé.");
+                            importErrorMsg.textContent = "Erreur: Ce nom de nœud est déjà utilisé.";
+                            setTimeout(() => importErrorMsg.textContent = "", 3000);
+                            header.textContent = nodeData.name; // Revert
+                        } else {
+                            nodeData.name = newName;
+                            header.textContent = newName;
+                            saveNode(nodeData); // Appel sync
+                        }
+                    } else {
+                        header.textContent = nodeData.name;
+                    }
+                    input.remove();
+                    header.classList.remove('hidden');
+                };
+
+                input.addEventListener('mousedown', (e) => e.stopPropagation());
+                input.addEventListener('blur', saveRename);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') input.blur();
+                    else if (e.key === 'Escape') {
+                        input.remove();
+                        header.classList.remove('hidden');
+                    }
+                });
+                
+                header.parentNode.insertBefore(input, header.nextSibling);
+                input.focus();
+                input.select();
+            });
+
+            // Bouton de suppression du nœud
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.className = 'absolute top-1 right-2 text-red-500 hover:text-red-300 text-2xl font-bold leading-none';
+            deleteBtn.title = 'Supprimer ce nœud';
+            deleteBtn.addEventListener('mousedown', (e) => e.stopPropagation()); // Empêcher le drag
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteNode(nodeData.id);
+            });
+            nodeEl.appendChild(deleteBtn);
+            
+            // Conteneur principal (Entrée + Champs de données)
+            const mainContent = document.createElement('div');
+            mainContent.className = 'p-3';
+            nodeEl.appendChild(mainContent);
+
+            // 1. Port d'entrée principal "Entrée"
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'flex items-center mb-3';
+            inputContainer.innerHTML = `<div class="port input-port bg-green-500 rounded-full mr-2"
+                                             data-node-id="${nodeData.id}" data-port-id="Entrée"></div>
+                                        <span class="text-gray-300">Entrée</span>`;
+            if (nodeData.inputs && nodeData.inputs.includes('Entrée')) {
+                mainContent.appendChild(inputContainer);
+            }
+
+            // 2. Champs de Données (URL, Duree, Duree Choix)
+            const createDataField = (label, property, type = 'text', placeholder = '') => {
+                const field = document.createElement('div');
+                field.className = 'data-field';
+                
+                const labelEl = document.createElement('label');
+                labelEl.textContent = label;
+                field.appendChild(labelEl);
+                
+                const inputEl = document.createElement('input');
+                inputEl.type = type;
+                inputEl.value = nodeData[property] || (type === 'number' ? 0 : '');
+                inputEl.placeholder = placeholder;
+                inputEl.addEventListener('mousedown', e => e.stopPropagation()); // Ne pas dragger
+                
+                inputEl.addEventListener('change', (e) => { // Plus besoin d'async
+                    let value = e.target.value;
+                    if (type === 'number') {
+                        value = parseInt(value, 10);
+                        if (isNaN(value)) value = 0;
+                    }
+                    nodeData[property] = value;
+                    saveNode(nodeData); // Sauvegarder au changement (appel sync)
+                });
+                
+                field.appendChild(inputEl);
+                mainContent.appendChild(field);
+            };
+
+            createDataField('URL:', 'url', 'text', 'video/intro.mp4');
+            createDataField('Durée (ms):', 'duree', 'number', '13000');
+            createDataField('Durée Choix (ms):', 'duree_choix', 'number', '4000');
+
+            // --- Logique des Choix Personnalisés ---
+            const separator = document.createElement('hr');
+            separator.className = 'border-gray-600 my-2';
+            mainContent.appendChild(separator);
+
+            const choicesContainer = document.createElement('div');
+            choicesContainer.className = 'flex flex-col gap-2';
+            mainContent.appendChild(choicesContainer);
+
+            if (!nodeData.choices) nodeData.choices = []; // Initialiser le tableau
+
+            // Rendu de chaque choix
+            nodeData.choices.forEach(choiceLabel => {
+                const choiceRow = document.createElement('div');
+                choiceRow.className = 'flex items-center justify-between text-sm text-gray-400 p-1 bg-gray-800 rounded';
+
+                // 1. Label du Choix (Renommable) + Bouton Supprimer
+                const centerDiv = document.createElement('div');
+                centerDiv.className = 'flex-1 flex items-center justify-start min-w-0 px-1';
+                
+                const label = document.createElement('span');
+                label.className = 'truncate cursor-text hover:text-white';
+                label.textContent = choiceLabel;
+                centerDiv.appendChild(label);
+
+                // --- Logique de Renommage du Choix (double-clic) ---
+                label.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    const oldLabel = label.textContent;
+                    label.classList.add('hidden');
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = oldLabel;
+                    input.className = 'bg-gray-700 text-white text-sm w-full rounded border border-blue-500 p-0.5 -m-0.5';
+
+                    const saveChoiceRename = () => { // Plus besoin d'async
+                        const newLabel = input.value.trim();
+                        if (newLabel && newLabel !== oldLabel) {
+                            const index = nodeData.choices.indexOf(oldLabel);
+                            if (index > -1) {
+                                nodeData.choices[index] = newLabel;
+                                label.textContent = newLabel;
+                                saveNode(nodeData); // Appel sync
+                            }
+                        } else {
+                            label.textContent = oldLabel;
+                        }
+                        input.remove();
+                        label.classList.remove('hidden');
+                    };
+
+                    input.addEventListener('mousedown', (e) => e.stopPropagation());
+                    input.addEventListener('blur', saveChoiceRename);
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') input.blur();
+                        else if (e.key === 'Escape') {
+                            input.remove();
+                            label.classList.remove('hidden');
+                        }
+                    });
+
+                    centerDiv.insertBefore(input, label.nextSibling);
+                    input.focus();
+                    input.select();
+                });
+                
+                const deleteChoiceBtn = document.createElement('button');
+                deleteChoiceBtn.innerHTML = '&times;';
+                deleteChoiceBtn.className = 'text-red-500 hover:text-red-300 font-bold ml-2 text-base leading-none';
+                deleteChoiceBtn.title = 'Supprimer ce choix';
+                
+                deleteChoiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+                deleteChoiceBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteLinksForPort(nodeData.id, `${choiceLabel}_out`);
+                    nodeData.choices = nodeData.choices.filter(label => label !== choiceLabel);
+                    saveNode(nodeData); // Appel sync
+                });
+                
+                centerDiv.appendChild(deleteChoiceBtn);
+                choiceRow.appendChild(centerDiv);
+
+                // 2. Port de Sortie du Choix
+                const outputSide = document.createElement('div');
+                outputSide.className = 'flex items-center';
+                outputSide.innerHTML = `<div class="port output-port bg-yellow-500 rounded-full ml-2"
+                                             data-node-id="${nodeData.id}" data-port-id="${choiceLabel}_out"></div>`;
+                choiceRow.appendChild(outputSide);
+
+                choicesContainer.appendChild(choiceRow);
+            });
+
+            // Bouton "Ajouter un Choix"
+            const addChoiceBtn = document.createElement('button');
+            addChoiceBtn.textContent = 'Ajouter Choix';
+            addChoiceBtn.className = 'mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded w-full transition duration-150';
+            
+            if (nodeData.choices.length >= 4) {
+                addChoiceBtn.disabled = true;
+                addChoiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            addChoiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+            addChoiceBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (nodeData.choices.length < 4) {
+                    const newChoiceLabel = `Choix ${nodeData.choices.length + 1}`;
+                    nodeData.choices.push(newChoiceLabel);
+                    saveNode(nodeData); // Appel sync
+                }
+            });
+            
+            mainContent.appendChild(addChoiceBtn);
+
+            return nodeEl;
+        }
+
+        /**
+         * Affiche un nœud sur l'éditeur (ou le met à jour).
+         * @param {Object} nodeData Les données du nœud.
+         */
+        function renderNode(nodeData) {
+            let nodeEl = document.getElementById(nodeData.id);
+
+            if (!nodeEl) {
+                nodeEl = createNodeElement(nodeData);
+                editor.appendChild(nodeEl);
+            }
+
+            nodeEl.style.left = `${nodeData.position.x}px`;
+            nodeEl.style.top = `${nodeData.position.y}px`;
+        }
+        
+        /**
+         * Ajoute un nouveau nœud (via bouton ou import).
+         * @param {number} x Position X.
+         * @param {number} y Position Y.
+         * @param {Object} [importData=null] Données optionnelles pour l'import.
+         */
+        function addNewNode(x, y, importData = null) { // Plus besoin d'async
+            let newNodeData;
+            
+            if (importData) {
+                newNodeData = {
+                    id: importData.id,
+                    name: importData.name,
+                    position: importData.position || { x, y },
+                    inputs: importData.inputs || ['Entrée'],
+                    outputs: importData.outputs || [],
+                    choices: importData.choices || [],
+                    url: importData.url || '',
+                    duree: importData.duree || 0,
+                    duree_choix: importData.duree_choix || 0
+                };
+            } else {
+                const newId = `node-${nextNodeId}`;
+                nextNodeId++;
+                newNodeData = {
+                    id: newId,
+                    name: `Scene ${newId.split('-')[1]}`,
+                    position: { x, y },
+                    inputs: ['Entrée'],
+                    outputs: [],
+                    choices: [],
+                    url: '',
+                    duree: 0,
+                    duree_choix: 0
+                };
+            }
+            
+            const idNum = parseInt(newNodeData.id.split('-')[1]);
+            if (idNum >= nextNodeId) {
+                nextNodeId = idNum + 1;
+            }
+
+            saveNode(newNodeData); // Appel sync (va sauvegarder ET rendre)
+            return newNodeData; 
+        }
+
+        // --- Fonctions de Liens (Création et Rendu) ---
+
+        /**
+         * Affiche un lien SVG sur l'éditeur.
+         * @param {Object} linkData Les données du lien.
+         */
+        function renderLink(linkData) {
+            const pathId = linkData.id;
+            let path = document.getElementById(pathId);
+
+            if (!path) {
+                path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.id = pathId;
+                path.classList.add('link');
+                
+                path.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteLink(pathId);
+                });
+                
+                svgContainer.appendChild(path);
+            }
+
+            updateLinkPath(path, linkData.source, linkData.source_port, linkData.target, linkData.target_port);
+        }
+
+        /**
+         * Met à jour la position (le 'd' attribute) d'un lien SVG.
+         * @param {SVGPathElement} path L'élément SVG du lien.
+         * @param {string} sourceNodeId ID du nœud source.
+         * @param {string} sourcePortId ID du port source.
+         * @param {string} targetNodeId ID du nœud cible.
+         * @param {string} targetPortId ID du port cible.
+         */
+        function updateLinkPath(path, sourceNodeId, sourcePortId, targetNodeId, targetPortId) {
+            const sourcePortEl = document.querySelector(`.port[data-node-id="${sourceNodeId}"][data-port-id="${sourcePortId}"]`);
+            const targetPortEl = document.querySelector(`.port[data-node-id="${targetNodeId}"][data-port-id="${targetPortId}"]`);
+
+            if (!sourcePortEl || !targetPortEl) {
+                path.setAttribute('d', '');
+                return;
+            }
+
+            const svgRect = svgContainer.getBoundingClientRect();
+            
+            const startRect = sourcePortEl.getBoundingClientRect();
+            const endRect = targetPortEl.getBoundingClientRect();
+
+            const startX = startRect.left + startRect.width / 2 - svgRect.left;
+            const startY = startRect.top + startRect.height / 2 - svgRect.top;
+            const endX = endRect.left + endRect.width / 2 - svgRect.left;
+            const endY = endRect.top + endRect.height / 2 - svgRect.top;
+            
+            const dx = Math.abs(endX - startX);
+            const ctrlX1 = startX + dx * 0.5; 
+            const ctrlY1 = startY;
+            const ctrlX2 = endX - dx * 0.5;
+            const ctrlY2 = endY;
+
+            path.setAttribute('d', `M ${startX} ${startY} C ${ctrlX1} ${ctrlY1}, ${ctrlX2} ${ctrlY2}, ${endX} ${endY}`);
+        }
+
+        /**
+         * Met à jour tous les liens visibles.
+         */
+        function updateAllLinks() {
+            Object.values(graphData.links).forEach(linkData => {
+                const path = document.getElementById(linkData.id);
+                if (path) {
+                    updateLinkPath(path, linkData.source, linkData.source_port, linkData.target, linkData.target_port);
+                } else {
+                    renderLink(linkData);
+                }
+            });
+        }
+        
+        /**
+         * Supprime un lien (DOM et modèle local).
+         * @param {string} linkId L'ID du lien.
+         */
+        function deleteLink(linkId) { // Plus besoin d'async
+            // 1. Supprimer du DOM
+            const path = document.getElementById(linkId);
+            if (path) path.remove();
+
+            // 2. Supprimer du modèle
+            delete graphData.links[linkId];
+
+            // 3. Section Firestore SUPPRIMÉE
+        }
+
+        /**
+         * Supprime tous les liens connectés à un port spécifique.
+         * @param {string} nodeId L'ID du nœud.
+         * @param {string} portId L'ID du port.
+         */
+        function deleteLinksForPort(nodeId, portId) {
+            const linksToDelete = Object.values(graphData.links).filter(
+                link => (link.source === nodeId && link.source_port === portId) ||
+                        (link.target === nodeId && link.target_port === portId)
+            );
+            linksToDelete.forEach(link => {
+                deleteLink(link.id); 
+            });
+        }
+
+        /**
+         * Supprime un nœud et tous les liens associés.
+         * @param {string} nodeId L'ID du nœud.
+         */
+        function deleteNode(nodeId) { // Plus besoin d'async
+            // 1. Supprimer tous les liens connectés
+            const linksToDelete = Object.values(graphData.links).filter(
+                link => link.source === nodeId || link.target === nodeId
+            );
+            linksToDelete.forEach(link => deleteLink(link.id)); 
+
+            // 2. Supprimer le nœud du DOM
+            const nodeEl = document.getElementById(nodeId);
+            if (nodeEl) nodeEl.remove();
+
+            // 3. Section Firestore SUPPRIMÉE
+
+            // 4. Supprimer du modèle local
+            delete graphData.nodes[nodeId];
+        }
+
+        // --- Gestion du Drag-and-Drop ---
+
+        /**
+         * Démarre le drag d'un nœud ou d'un lien.
+         * @param {MouseEvent} e L'événement mousedown.
+         */
+        function startDrag(e) {
+            e.stopPropagation();
+            
+            const target = e.target;
+            
+            const nodeHeader = target.closest('.node-header');
+            if (nodeHeader) {
+                draggedNode = nodeHeader.closest('.node');
+                draggedNode.style.zIndex = 20; 
+                
+                const rect = draggedNode.getBoundingClientRect();
+                const editorRect = editor.getBoundingClientRect();
+                
+                offset.x = e.clientX - rect.left + editorRect.left;
+                offset.y = e.clientY - rect.top + editorRect.top;
+
+                document.body.classList.add('no-scroll'); 
+                return;
+            }
+
+            const portEl = target.closest('.output-port');
+            if (portEl) {
+                e.stopPropagation();
+                
+                startPort = {
+                    element: portEl,
+                    nodeId: portEl.dataset.nodeId,
+                    portId: portEl.dataset.portId
+                };
+                
+                if (!currentLink) {
+                    currentLink = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    currentLink.id = 'temp-link';
+                    svgContainer.appendChild(currentLink);
+                }
+                return;
+            }
+        }
+
+        /**
+         * Gère le mouvement pendant un drag.
+         * @param {MouseEvent} e L'événement mousemove.
+         */
+        function drag(e) {
+            e.preventDefault();
+            
+            if (draggedNode) {
+                const editorRect = editor.getBoundingClientRect();
+                let x = e.clientX - offset.x - editorRect.left;
+                let y = e.clientY - offset.y - editorRect.top;
+
+                x = Math.max(0, Math.min(x, editor.clientWidth - draggedNode.offsetWidth));
+                y = Math.max(0, Math.min(y, editor.clientHeight - draggedNode.offsetHeight));
+
+                draggedNode.style.left = `${x}px`;
+                draggedNode.style.top = `${y}px`;
+
+                const nodeData = graphData.nodes[draggedNode.id];
+                if (nodeData) {
+                    nodeData.position = { x, y };
+                }
+                
+                updateAllLinks(); 
+                return;
+            }
+
+            if (startPort) {
+                const svgRect = svgContainer.getBoundingClientRect();
+                const startRect = startPort.element.getBoundingClientRect();
+                
+                const startX = startRect.left + startRect.width / 2 - svgRect.left;
+                const startY = startRect.top + startRect.height / 2 - svgRect.top;
+                const endX = e.clientX - svgRect.left;
+                const endY = e.clientY - svgRect.top;
+
+                const dx = Math.abs(endX - startX);
+                const ctrlX1 = startX + dx * 0.5;
+                const ctrlY1 = startY;
+                const ctrlX2 = endX - dx * 0.5;
+                const ctrlY2 = endY;
+
+                currentLink.setAttribute('d', `M ${startX} ${startY} C ${ctrlX1} ${ctrlY1}, ${ctrlX2} ${ctrlY2}, ${endX} ${endY}`);
+                return;
+            }
+        }
+
+        /**
+         * Termine le drag (nœud ou lien).
+         * @param {MouseEvent} e L'événement mouseup.
+         */
+        function endDrag(e) { // Plus besoin d'async
+            e.stopPropagation();
+
+            if (draggedNode) {
+                draggedNode.style.zIndex = 10;
+                const nodeData = graphData.nodes[draggedNode.id];
+                if (nodeData) {
+                    saveNode(nodeData); // Appel sync
+                }
+                draggedNode = null;
+                document.body.classList.remove('no-scroll');
+            }
+
+            if (startPort) {
+                const targetElement = e.target.closest('.input-port');
+                
+                if (targetElement && targetElement.dataset.nodeId !== startPort.nodeId) {
+                    const newLink = {
+                        id: `link-${Date.now()}`,
+                        source: startPort.nodeId,
+                        source_port: startPort.portId,
+                        target: targetElement.dataset.nodeId,
+                        target_port: targetElement.dataset.portId,
+                    };
+
+                    saveLink(newLink); // Appel sync
+                }
+
+                if (currentLink) {
+                    currentLink.remove();
+                    currentLink = null;
+                }
+                startPort = null;
+            }
+        }
+
+        // --- Fonctions d'Import/Export JSON (Format data_film) ---
+
+        /**
+         * Exporte le graphe au format data_film.
+         */
+        function exportGraphToJson() {
+            const dataFilm = {};
+            const nodesById = graphData.nodes;
+            
+            try {
+                for (const node of Object.values(nodesById)) {
+                    const nodeName = node.name;
+                    if (dataFilm[nodeName]) {
+                        throw new Error(`Erreur d'export: Le nom de nœud "${nodeName}" est dupliqué.`);
+                    }
+
+                    const choixObj = {};
+                    if (node.choices && node.choices.length > 0) {
+                        for (const choiceLabel of node.choices) {
+                            const portId = `${choiceLabel}_out`;
+                            const link = Object.values(graphData.links).find(
+                                l => l.source === node.id && l.source_port === portId
+                            );
+                            
+                            let targetNodeName = null;
+                            if (link) {
+                                const targetNode = nodesById[link.target];
+                                if (targetNode) {
+                                    targetNodeName = targetNode.name;
+                                }
+                            }
+                            choixObj[choiceLabel] = [choiceLabel, targetNodeName];
+                        }
+                    }
+
+                    dataFilm[nodeName] = {
+                        url: node.url || '',
+                        duree: node.duree || 0,
+                        duree_choix: node.duree_choix || 0,
+                    };
+                    
+                    if (Object.keys(choixObj).length > 0) {
+                        const finalChoixObj = {};
+                        Object.values(choixObj).forEach((choiceArray, index) => {
+                            finalChoixObj[`choix${index + 1}`] = choiceArray;
+                        });
+                        dataFilm[nodeName].choix = finalChoixObj;
+                    }
+                }
+
+                const constructData = {
+                    nodes: Object.values(graphData.nodes).map(n => ({ ...n })),
+                    links: Object.values(graphData.links).map(l => ({ ...l })) 
+                };
+
+                const finalExportData = {
+                    data_film: dataFilm,
+                    construct: constructData
+                };
+
+                jsonOutput.value = JSON.stringify(finalExportData, null, 2);
+                jsonModalTitle.textContent = "Exporter au format data_film + construct";
+                confirmImportBtn.classList.add('hidden');
+                importErrorMsg.textContent = "";
+                jsonModal.classList.remove('hidden');
+                jsonOutput.readOnly = true;
+
+            } catch (error) {
+                console.error(`Erreur lors de l'exportation: ${error.message}`);
+                importErrorMsg.textContent = `Erreur lors de l'exportation: ${error.message}`;
+                jsonModal.classList.remove('hidden');
+                setTimeout(() => importErrorMsg.textContent = "", 3000);
+            }
+        }
+        
+        /**
+         * Affiche la modale d'importation.
+         */
+        function showImportModal() {
+            jsonOutput.value = "";
+            jsonModalTitle.textContent = "Importer depuis data_film JSON";
+            confirmImportBtn.classList.remove('hidden');
+            importErrorMsg.textContent = "";
+            jsonModal.classList.remove('hidden');
+            jsonOutput.readOnly = false;
+            jsonOutput.placeholder = "Collez votre objet data_film ici...";
+        }
+
+        /**
+         * Importe un graphe depuis le format data_film.
+         */
+        function importGraphFromJson() { // Plus besoin d'async
+            let importData;
+            try {
+                importData = JSON.parse(jsonOutput.value);
+                if (typeof importData !== 'object' || Array.isArray(importData) || importData === null) {
+                    throw new Error("Le JSON doit être un objet.");
+                }
+                importErrorMsg.textContent = "";
+            } catch (error) {
+                importErrorMsg.textContent = `Erreur JSON: ${error.message}`;
+                return;
+            }
+
+            // Section confirm() SUPPRIMÉE
+
+            try {
+                if (importData.construct && Array.isArray(importData.construct.nodes)) {
+                    console.log("Détection du format 'construct'. Démarrage de l'importation...");
+                    importFromConstruct(importData.construct); // Appel sync
+                } else {
+                    console.log("Détection du format 'data_film'. Démarrage de l'importation...");
+                    importFromDataFilm(importData); // Appel sync
+                }
+                
+                console.log("Importation terminée.");
+                jsonModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Erreur d'importation:", error);
+                importErrorMsg.textContent = `Erreur d'importation: ${error.message}`;
+            }
+        }
+        
+        /**
+         * (NOUVELLE FONCTION) Importe un graphe depuis l'ancien format 'data_film'.
+         * @param {Object} importData L'objet data_film.
+         */
+        function importFromDataFilm(importData) { // Plus besoin d'async
+            clearCurrentGraph();
+            
+            const nodeNameMap = {}; 
+            const nodePositions = generateCircularPositions(Object.keys(importData).length, editor.clientWidth / 2, editor.clientHeight / 2, 250);
+            let index = 0;
+            
+            for (const nodeName in importData) {
+                const data = importData[nodeName];
+                const choiceLabels = data.choix ? Object.values(data.choix).map(arr => arr[0]) : [];
+                
+                const nodeToImport = {
+                    id: `node-${index + 1}`,
+                    name: nodeName,
+                    position: nodePositions[index],
+                    inputs: ['Entrée'],
+                    outputs: [],
+                    choices: choiceLabels,
+                    url: data.url || '',
+                    duree: data.duree || 0,
+                    duree_choix: data.duree_choix || 0
+                };
+                
+                const newNode = addNewNode(nodePositions[index].x, nodePositions[index].y, nodeToImport); // Appel sync
+                graphData.nodes[newNode.id] = newNode; 
+                nodeNameMap[nodeName] = newNode.id; 
+                
+                index++;
+            }
+
+            for (const sourceNodeName in importData) {
+                const data = importData[sourceNodeName];
+                if (!data.choix) continue;
+                
+                const sourceNodeId = nodeNameMap[sourceNodeName];
+                if (!sourceNodeId) continue; 
+                
+                for (const choiceKey in data.choix) {
+                    const choiceArray = data.choix[choiceKey];
+                    const choiceLabel = choiceArray[0];
+                    const targetNodeName = choiceArray[1];
+                    
+                    if (targetNodeName && nodeNameMap[targetNodeName]) {
+                        const targetNodeId = nodeNameMap[targetNodeName];
+                        
+                        const newLink = {
+                            id: `link-${Date.now()}-${Math.random()}`,
+                            source: sourceNodeId,
+                            source_port: `${choiceLabel}_out`, 
+                            target: targetNodeId,
+                            target_port: 'Entrée' 
+                        };
+                        
+                        saveLink(newLink); // Appel sync
+                        graphData.links[newLink.id] = newLink; 
+                    }
+                }
+            }
+        }
+
+        /**
+         * (NOUVELLE FONCTION) Importe un graphe depuis le format 'construct' (structure 1:1).
+         * @param {Object} constructData L'objet { nodes: [], links: [] }.
+         */
+        function importFromConstruct(constructData) { // Plus besoin d'async
+            clearCurrentGraph();
+            
+            for (const node of constructData.nodes) {
+                const pos = node.position || { x: 50, y: 50 };
+                const newNode = addNewNode(pos.x, pos.y, node); // Appel sync
+                graphData.nodes[newNode.id] = newNode; 
+            }
+
+            for (const link of constructData.links) {
+                saveLink(link); // Appel sync
+                graphData.links[link.id] = link; 
+            }
+        }
+
+        /**
+         * Vide le graphe actuel localement.
+         */
+        function clearCurrentGraph() { // Plus besoin d'async
+            // 1. Vider le modèle local
+            graphData = { nodes: {}, links: {} };
+            
+            // 2. Vider le DOM
+            editor.innerHTML = '';
+            svgContainer.innerHTML = '';
+            
+            // 3. Section Vider Firestore SUPPRIMÉE
+            
+            // Réinitialiser le compteur d'ID
+            nextNodeId = 1;
+        }
+
+        /**
+         * Génère des positions en cercle pour l'importation.
+         */
+        function generateCircularPositions(count, centerX, centerY, radius) {
+            const positions = [];
+            const angleStep = (2 * Math.PI) / count;
+            for (let i = 0; i < count; i++) {
+                const x = centerX + radius * Math.cos(i * angleStep - Math.PI / 2); 
+                const y = centerY + radius * Math.sin(i * angleStep - Math.PI / 2);
+                positions.push({ x: Math.round(x), y: Math.round(y) });
+            }
+            return positions;
+        }
+
+        // --- Démarrage ---
+        initApp();
+
+    </script>
+</body>
+</html>
