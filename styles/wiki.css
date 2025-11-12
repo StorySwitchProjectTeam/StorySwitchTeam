@@ -26,7 +26,8 @@ main {
     flex-direction: column;
     padding-bottom: 0px;
     border-right: solid 2px #F2F2F2;
-    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
 }
 
 .menu_liste {
