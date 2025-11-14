@@ -9,7 +9,7 @@
 // \__|     \__|\__|     \__|\______|      \_______/ \________|    \_/    \______|
 // Script made by Michaël VLESIK-SCHMITT | Argjend KALLARI | Emma JOLIVET | Dimitri KNYAZEV
 // Michaël VLESIK-SCHMITT : https://github.com/FroostDev | https://michaelvlesik.fr
-// Argjend KALLLARI : https://github.com/Argjend05 | https://argjendkallari.fr
+// Argjend KALLARI : https://github.com/Argjend05 | https://argjendkallari.fr
 // Emma JOLIVET : https://github.com/emmaj2
 // Dimitri KNYAZEV : https://github.com/Sopatrika | https://dimitriknyazev.fr
 
