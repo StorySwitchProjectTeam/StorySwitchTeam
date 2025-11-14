@@ -91,7 +91,7 @@
             margin-right: 8px;
             min-width: 90px; /* Aligner les inputs */
         }
-        .data-field input {
+        .data-field input, .data-field select {
             font-size: 0.8rem;
             background-color: #2d3748; /* gray-800 */
             color: white;
@@ -106,13 +106,16 @@
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans h-screen m-0">
 
-    <!-- Interface principale -->
     <div class="flex flex-col h-screen">
         
-        <!-- Barre d'outils -->
         <header class="bg-gray-800 text-white p-2 flex justify-between items-center shadow-md z-20">
             <h1 class="text-xl font-semibold">Éditeur de Film Interactif</h1>
             <div class="flex gap-2">
+                <button id="load-videos-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Charger le dossier Vidéos
+                </button>
+                <input type="file" id="video-folder-input" webkitdirectory directory style="display: none;" />
+
                 <button id="add-node-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Ajouter un Nœud
                 </button>
@@ -125,17 +128,13 @@
             </div>
         </header>
 
-        <!-- Zone de l'éditeur -->
         <main class="flex-1 relative">
             <div id="editor"></div>
-            <!-- Conteneur pour les lignes SVG -->
             <svg id="svg-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
         </main>
         
-        <!-- Pied de page supprimé (plus d'ID utilisateur) -->
     </div>
 
-    <!-- Modale pour Exporter/Importer JSON -->
     <div id="json-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-2xl">
             <div class="flex justify-between items-center mb-4">
@@ -145,6 +144,9 @@
             <textarea id="json-output" class="w-full h-64 bg-gray-900 text-gray-200 font-mono p-2 rounded border border-gray-600"></textarea>
             <p id="import-error-msg" class="text-red-500 text-sm mt-2"></p>
             <div class="mt-4 flex justify-end gap-3">
+                <button id="save-to-player-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Sauvegarder pour le lecteur
+                </button>
                 <button id="json-modal-confirm-import" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Valider l'Importation
                 </button>
@@ -153,13 +155,8 @@
     </div>
 
 
-    <!-- Imports Firebase (Module) -->
     <script type="module">
-        // --- Imports Firebase SUPPRIMÉS ---
-
         // --- Variables Globales ---
-
-        // --- Variables Firebase SUPPRIMÉES ---
         
         // État de l'éditeur
         const editor = document.getElementById('editor');
@@ -175,6 +172,8 @@
         let startPort = null;
         let currentLink = null;
 
+        let videoFileList = []; // Stocke la liste des chemins vidéo (ex: "video/intro.mp4")
+
         // Éléments DOM
         const addNodeBtn = document.getElementById('add-node-btn');
         const exportJsonBtn = document.getElementById('export-json-btn');
@@ -185,7 +184,9 @@
         const jsonModalTitle = document.getElementById('json-modal-title');
         const confirmImportBtn = document.getElementById('json-modal-confirm-import');
         const importErrorMsg = document.getElementById('import-error-msg');
-        // const userIdDisplay = document.getElementById('user-id-display'); // Supprimé
+        const saveToPlayerBtn = document.getElementById('save-to-player-btn');
+        const loadVideosBtn = document.getElementById('load-videos-btn');
+        const videoFolderInput = document.getElementById('video-folder-input');
 
         // --- Initialisation ---
 
@@ -194,7 +195,15 @@
          */
         function initApp() {
             try {
-                // --- Initialisation Firebase SUPPRIMÉE ---
+                // === MODIFIÉ ICI ===
+                // Charger la liste des vidéos au démarrage
+                const savedVideoList = localStorage.getItem('storyswitch_videoList');
+                if (savedVideoList) {
+                    videoFileList = JSON.parse(savedVideoList);
+                    console.log("Liste de vidéos chargée depuis le localStorage:", videoFileList);
+                }
+                // === FIN MODIFICATION ===
+
                 setupEventListeners();
                 console.log("Application initialisée (mode local).");
             } catch (error) {
@@ -202,8 +211,6 @@
                 editor.innerHTML = `<div class="p-4 text-red-400">Erreur critique lors de l'initialisation. Vérifiez la console.</div>`;
             }
         }
-
-        // --- Fonction setupAuthentication SUPPRIMÉE ---
 
         /**
          * Attache tous les écouteurs d'événements globaux.
@@ -217,6 +224,11 @@
             // Modale
             closeModalBtn.addEventListener('click', () => jsonModal.classList.add('hidden'));
             confirmImportBtn.addEventListener('click', importGraphFromJson);
+            saveToPlayerBtn.addEventListener('click', saveToPlayer);
+
+            // Vidéos
+            loadVideosBtn.addEventListener('click', () => videoFolderInput.click());
+            videoFolderInput.addEventListener('change', handleVideoFolderSelect);
 
             // Éditeur (Drag-and-Drop et Liens)
             editor.addEventListener('mousedown', startDrag);
@@ -228,9 +240,7 @@
             editor.addEventListener('selectstart', (e) => e.preventDefault());
         }
 
-        // --- Gestion Firestore (Sauvegarde et Chargement) ---
-
-        // --- Fonction startFirestoreListeners SUPPRIMÉE ---
+        // --- Gestion des Données (Sauvegarde et Chargement) ---
 
         /**
          * Sauvegarde les données d'un nœud dans le modèle local (graphData)
@@ -288,7 +298,7 @@
                 input.value = nodeData.name;
                 input.className = 'bg-gray-900 text-white font-semibold text-lg w-full rounded border border-blue-500 p-0.5 m-2 box-border';
                 
-                const saveRename = () => { // Plus besoin d'async
+                const saveRename = () => {
                     const newName = input.value.trim();
                     if (newName && newName !== nodeData.name) {
                         // Vérifier si le nom existe déjà
@@ -367,7 +377,7 @@
                 inputEl.placeholder = placeholder;
                 inputEl.addEventListener('mousedown', e => e.stopPropagation()); // Ne pas dragger
                 
-                inputEl.addEventListener('change', (e) => { // Plus besoin d'async
+                inputEl.addEventListener('change', (e) => {
                     let value = e.target.value;
                     if (type === 'number') {
                         value = parseInt(value, 10);
@@ -381,8 +391,44 @@
                 mainContent.appendChild(field);
             };
 
-            createDataField('URL:', 'url', 'text', 'video/intro.mp4');
-            createDataField('Durée (ms):', 'duree', 'number', '13000');
+            // Input URL (Menu déroulant)
+            const urlField = document.createElement('div');
+            urlField.className = 'data-field';
+            
+            const urlLabel = document.createElement('label');
+            urlLabel.textContent = 'Vidéo:';
+            urlField.appendChild(urlLabel);
+            
+            const selectEl = document.createElement('select');
+            selectEl.className = 'w-full'; // Tailwind gérera le style via .data-field select
+            selectEl.addEventListener('mousedown', e => e.stopPropagation()); // Ne pas dragger
+            
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = "";
+            defaultOpt.textContent = "-- Choisir une vidéo --";
+            selectEl.appendChild(defaultOpt);
+            
+            // On utilise la liste globale (chargée au démarrage)
+            videoFileList.forEach(videoPath => {
+                const opt = document.createElement('option');
+                opt.value = videoPath;
+                const fileName = videoPath.substring(videoPath.lastIndexOf('/') + 1);
+                opt.textContent = fileName;
+                
+                if (videoPath === nodeData.url) {
+                    opt.selected = true; // Sélectionner la valeur sauvegardée
+                }
+                selectEl.appendChild(opt);
+            });
+            
+            selectEl.addEventListener('change', () => {
+                nodeData.url = selectEl.value;
+                saveNode(nodeData); // Sauvegarder au changement
+            });
+            
+            urlField.appendChild(selectEl);
+            mainContent.appendChild(urlField);
+            
             createDataField('Durée Choix (ms):', 'duree_choix', 'number', '4000');
 
             // --- Logique des Choix Personnalisés ---
@@ -410,7 +456,7 @@
                 label.textContent = choiceLabel;
                 centerDiv.appendChild(label);
 
-                // --- Logique de Renommage du Choix (double-clic) ---
+                // Renommage du Choix (double-clic)
                 label.addEventListener('dblclick', (e) => {
                     e.stopPropagation();
                     const oldLabel = label.textContent;
@@ -421,7 +467,7 @@
                     input.value = oldLabel;
                     input.className = 'bg-gray-700 text-white text-sm w-full rounded border border-blue-500 p-0.5 -m-0.5';
 
-                    const saveChoiceRename = () => { // Plus besoin d'async
+                    const saveChoiceRename = () => {
                         const newLabel = input.value.trim();
                         if (newLabel && newLabel !== oldLabel) {
                             const index = nodeData.choices.indexOf(oldLabel);
@@ -525,7 +571,7 @@
          * @param {number} y Position Y.
          * @param {Object} [importData=null] Données optionnelles pour l'import.
          */
-        function addNewNode(x, y, importData = null) { // Plus besoin d'async
+        function addNewNode(x, y, importData = null) {
             let newNodeData;
             
             if (importData) {
@@ -537,7 +583,6 @@
                     outputs: importData.outputs || [],
                     choices: importData.choices || [],
                     url: importData.url || '',
-                    duree: importData.duree || 0,
                     duree_choix: importData.duree_choix || 0
                 };
             } else {
@@ -551,7 +596,6 @@
                     outputs: [],
                     choices: [],
                     url: '',
-                    duree: 0,
                     duree_choix: 0
                 };
             }
@@ -645,15 +689,10 @@
          * Supprime un lien (DOM et modèle local).
          * @param {string} linkId L'ID du lien.
          */
-        function deleteLink(linkId) { // Plus besoin d'async
-            // 1. Supprimer du DOM
+        function deleteLink(linkId) {
             const path = document.getElementById(linkId);
             if (path) path.remove();
-
-            // 2. Supprimer du modèle
             delete graphData.links[linkId];
-
-            // 3. Section Firestore SUPPRIMÉE
         }
 
         /**
@@ -675,7 +714,7 @@
          * Supprime un nœud et tous les liens associés.
          * @param {string} nodeId L'ID du nœud.
          */
-        function deleteNode(nodeId) { // Plus besoin d'async
+        function deleteNode(nodeId) {
             // 1. Supprimer tous les liens connectés
             const linksToDelete = Object.values(graphData.links).filter(
                 link => link.source === nodeId || link.target === nodeId
@@ -686,9 +725,7 @@
             const nodeEl = document.getElementById(nodeId);
             if (nodeEl) nodeEl.remove();
 
-            // 3. Section Firestore SUPPRIMÉE
-
-            // 4. Supprimer du modèle local
+            // 3. Supprimer du modèle local
             delete graphData.nodes[nodeId];
         }
 
@@ -788,7 +825,7 @@
          * Termine le drag (nœud ou lien).
          * @param {MouseEvent} e L'événement mouseup.
          */
-        function endDrag(e) { // Plus besoin d'async
+        function endDrag(e) {
             e.stopPropagation();
 
             if (draggedNode) {
@@ -861,7 +898,6 @@
 
                     dataFilm[nodeName] = {
                         url: node.url || '',
-                        duree: node.duree || 0,
                         duree_choix: node.duree_choix || 0,
                     };
                     
@@ -887,6 +923,7 @@
                 jsonOutput.value = JSON.stringify(finalExportData, null, 2);
                 jsonModalTitle.textContent = "Exporter au format data_film + construct";
                 confirmImportBtn.classList.add('hidden');
+                saveToPlayerBtn.classList.remove('hidden'); 
                 importErrorMsg.textContent = "";
                 jsonModal.classList.remove('hidden');
                 jsonOutput.readOnly = true;
@@ -906,6 +943,7 @@
             jsonOutput.value = "";
             jsonModalTitle.textContent = "Importer depuis data_film JSON";
             confirmImportBtn.classList.remove('hidden');
+            saveToPlayerBtn.classList.add('hidden'); 
             importErrorMsg.textContent = "";
             jsonModal.classList.remove('hidden');
             jsonOutput.readOnly = false;
@@ -915,7 +953,7 @@
         /**
          * Importe un graphe depuis le format data_film.
          */
-        function importGraphFromJson() { // Plus besoin d'async
+        function importGraphFromJson() {
             let importData;
             try {
                 importData = JSON.parse(jsonOutput.value);
@@ -927,8 +965,6 @@
                 importErrorMsg.textContent = `Erreur JSON: ${error.message}`;
                 return;
             }
-
-            // Section confirm() SUPPRIMÉE
 
             try {
                 if (importData.construct && Array.isArray(importData.construct.nodes)) {
@@ -948,11 +984,57 @@
         }
         
         /**
-         * (NOUVELLE FONCTION) Importe un graphe depuis l'ancien format 'data_film'.
+         * Sauvegarde la partie data_film dans le localStorage.
+         */
+        function saveToPlayer() {
+            try {
+                const fullExportData = JSON.parse(jsonOutput.value);
+                if (!fullExportData || !fullExportData.data_film) {
+                    throw new Error("Format de données invalide, 'data_film' introuvable.");
+                }
+                const dataFilmString = JSON.stringify(fullExportData.data_film);
+                localStorage.setItem('storyswitch_data', dataFilmString);
+
+                saveToPlayerBtn.textContent = 'Sauvegardé !';
+                saveToPlayerBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                saveToPlayerBtn.classList.add('bg-green-600');
+
+                setTimeout(() => {
+                    saveToPlayerBtn.textContent = 'Sauvegarder pour le lecteur';
+                    saveToPlayerBtn.classList.remove('bg-green-600');
+                    saveToPlayerBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    jsonModal.classList.add('hidden');
+                }, 1500);
+
+            } catch (error)
+                {
+                importErrorMsg.textContent = `Erreur de sauvegarde: ${error.message}`;
+                console.error("Erreur sauvegarde localStorage:", error);
+            }
+        }
+        
+        /**
+         * Importe un graphe depuis l'ancien format 'data_film'.
          * @param {Object} importData L'objet data_film.
          */
-        function importFromDataFilm(importData) { // Plus besoin d'async
+        function importFromDataFilm(importData) {
             clearCurrentGraph();
+            
+            // === MODIFIÉ ICI : Fusion avec localStorage ===
+            // Charger la liste existante
+            let existingList = [];
+            const savedVideoList = localStorage.getItem('storyswitch_videoList');
+            if (savedVideoList) {
+                existingList = JSON.parse(savedVideoList);
+            }
+
+            const allUrls = Object.values(importData)
+                                .map(data => data.url)
+                                .filter(Boolean);
+            // Fusionner et sauvegarder
+            videoFileList = [...new Set([...existingList, ...allUrls])].sort();
+            localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
+            // === FIN MODIFICATION ===
             
             const nodeNameMap = {}; 
             const nodePositions = generateCircularPositions(Object.keys(importData).length, editor.clientWidth / 2, editor.clientHeight / 2, 250);
@@ -970,7 +1052,6 @@
                     outputs: [],
                     choices: choiceLabels,
                     url: data.url || '',
-                    duree: data.duree || 0,
                     duree_choix: data.duree_choix || 0
                 };
                 
@@ -1012,20 +1093,37 @@
         }
 
         /**
-         * (NOUVELLE FONCTION) Importe un graphe depuis le format 'construct' (structure 1:1).
+         * Importe un graphe depuis le format 'construct' (structure 1:1).
          * @param {Object} constructData L'objet { nodes: [], links: [] }.
          */
-        function importFromConstruct(constructData) { // Plus besoin d'async
+        function importFromConstruct(constructData) {
             clearCurrentGraph();
+            
+            // === MODIFIÉ ICI : Fusion avec localStorage ===
+            // Charger la liste existante
+            let existingList = [];
+            const savedVideoList = localStorage.getItem('storyswitch_videoList');
+            if (savedVideoList) {
+                existingList = JSON.parse(savedVideoList);
+            }
+
+            const allUrls = constructData.nodes
+                                .map(node => node.url)
+                                .filter(Boolean);
+            // Fusionner et sauvegarder
+            videoFileList = [...new Set([...existingList, ...allUrls])].sort();
+            localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
+            // === FIN MODIFICATION ===
             
             for (const node of constructData.nodes) {
                 const pos = node.position || { x: 50, y: 50 };
-                const newNode = addNewNode(pos.x, pos.y, node); // Appel sync
+                // addNewNode va maintenant ignorer 'duree' s'il existe dans le JSON
+                const newNode = addNewNode(pos.x, pos.y, node); 
                 graphData.nodes[newNode.id] = newNode; 
             }
 
             for (const link of constructData.links) {
-                saveLink(link); // Appel sync
+                saveLink(link); 
                 graphData.links[link.id] = link; 
             }
         }
@@ -1033,18 +1131,12 @@
         /**
          * Vide le graphe actuel localement.
          */
-        function clearCurrentGraph() { // Plus besoin d'async
-            // 1. Vider le modèle local
+        function clearCurrentGraph() {
             graphData = { nodes: {}, links: {} };
-            
-            // 2. Vider le DOM
             editor.innerHTML = '';
             svgContainer.innerHTML = '';
-            
-            // 3. Section Vider Firestore SUPPRIMÉE
-            
-            // Réinitialiser le compteur d'ID
             nextNodeId = 1;
+            // On ne vide PAS videoFileList ici, elle persiste
         }
 
         /**
@@ -1059,6 +1151,51 @@
                 positions.push({ x: Math.round(x), y: Math.round(y) });
             }
             return positions;
+        }
+
+        /**
+         * Gère la sélection du dossier de vidéos.
+         */
+        function handleVideoFolderSelect(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const videoExtensions = ['.mp4', '.webm', '.ogg'];
+            const newVideoPaths = [];
+
+            for (const file of files) {
+                const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+                if (videoExtensions.includes(extension)) {
+                    
+                    const relativePath = file.webkitRelativePath.replace(/\\/g, '/');
+                    
+                    if (relativePath.split('/').length === 2) {
+                        newVideoPaths.push(relativePath);
+                    }
+                }
+            }
+            
+            // === MODIFIÉ ICI : Fusionne avec la liste existante ===
+            const combinedList = [...new Set([...videoFileList, ...newVideoPaths])];
+            videoFileList = combinedList.sort(); 
+            // === FIN MODIFICATION ===
+
+            // === NOUVEL AJOUT : Sauvegarde la liste mise à jour ===
+            localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
+            // === FIN AJOUT ===
+
+            // Re-render tous les nœuds existants pour mettre à jour leurs menus déroulants
+            Object.values(graphData.nodes).forEach(nodeData => {
+                const existingEl = document.getElementById(nodeData.id);
+                if (existingEl) {
+                    existingEl.remove(); // Enlève l'ancien nœud
+                }
+                renderNode(nodeData); // Re-crée le nœud avec la liste à jour
+            });
+
+            console.log("Vidéos chargées et sauvegardées:", videoFileList);
+            
+            videoFolderInput.value = ""; 
         }
 
         // --- Démarrage ---
