@@ -125,7 +125,11 @@
                 <button id="export-json-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded transition duration-150">
                     Exporter JSON
                 </button>
-            </div>
+                
+                <a href="index.html" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Lancer le Lecteur
+                </a>
+                </div>
         </header>
 
         <main class="flex-1 relative">
@@ -195,14 +199,12 @@
          */
         function initApp() {
             try {
-                // === MODIFIÉ ICI ===
                 // Charger la liste des vidéos au démarrage
                 const savedVideoList = localStorage.getItem('storyswitch_videoList');
                 if (savedVideoList) {
                     videoFileList = JSON.parse(savedVideoList);
                     console.log("Liste de vidéos chargée depuis le localStorage:", videoFileList);
                 }
-                // === FIN MODIFICATION ===
 
                 setupEventListeners();
                 console.log("Application initialisée (mode local).");
@@ -1020,7 +1022,6 @@
         function importFromDataFilm(importData) {
             clearCurrentGraph();
             
-            // === MODIFIÉ ICI : Fusion avec localStorage ===
             // Charger la liste existante
             let existingList = [];
             const savedVideoList = localStorage.getItem('storyswitch_videoList');
@@ -1034,7 +1035,6 @@
             // Fusionner et sauvegarder
             videoFileList = [...new Set([...existingList, ...allUrls])].sort();
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
-            // === FIN MODIFICATION ===
             
             const nodeNameMap = {}; 
             const nodePositions = generateCircularPositions(Object.keys(importData).length, editor.clientWidth / 2, editor.clientHeight / 2, 250);
@@ -1099,7 +1099,6 @@
         function importFromConstruct(constructData) {
             clearCurrentGraph();
             
-            // === MODIFIÉ ICI : Fusion avec localStorage ===
             // Charger la liste existante
             let existingList = [];
             const savedVideoList = localStorage.getItem('storyswitch_videoList');
@@ -1113,7 +1112,6 @@
             // Fusionner et sauvegarder
             videoFileList = [...new Set([...existingList, ...allUrls])].sort();
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
-            // === FIN MODIFICATION ===
             
             for (const node of constructData.nodes) {
                 const pos = node.position || { x: 50, y: 50 };
@@ -1175,14 +1173,12 @@
                 }
             }
             
-            // === MODIFIÉ ICI : Fusionne avec la liste existante ===
+            // Fusionne avec la liste existante
             const combinedList = [...new Set([...videoFileList, ...newVideoPaths])];
             videoFileList = combinedList.sort(); 
-            // === FIN MODIFICATION ===
 
-            // === NOUVEL AJOUT : Sauvegarde la liste mise à jour ===
+            // Sauvegarde la liste mise à jour
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
-            // === FIN AJOUT ===
 
             // Re-render tous les nœuds existants pour mettre à jour leurs menus déroulants
             Object.values(graphData.nodes).forEach(nodeData => {
