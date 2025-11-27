@@ -178,7 +178,7 @@
             <button id="btn-settings" class="btn btn-dark px-2"><i class="fa-solid fa-gear"></i></button>
             <div class="h-8 w-px bg-white/10 mx-1"></div>
             
-            <button id="btn-save" class="btn" style="background:#7c3aed; color:white;"><i class="fa-solid fa-floppy-disk"></i> Sauver</button>
+            <button id="btn-save" class="btn" style="background:#7c3aed; color:white;"><i class="fa-solid fa-floppy-disk"></i> Sauvegarder</button>
             <a id="player-link" href="#" target="_blank" class="btn" style="background:#059669; color:white; pointer-events: none; opacity: 0.5;"><i class="fa-solid fa-play"></i> Jouer</a>
         </div>
     </header>
