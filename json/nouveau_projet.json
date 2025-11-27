@@ -1,0 +1,96 @@
+{
+    "data_film": {
+        "noir": {
+            "url": "videos\/2.mp4",
+            "duree_choix": 4000,
+            "choix": {
+                "choix1": [
+                    "d1dddzd",
+                    "Séquence 2"
+                ],
+                "choix2": [
+                    "Choix 2zd",
+                    "Séquence 2"
+                ],
+                "choix3": [
+                    "Choix 3",
+                    "Séquence 2"
+                ],
+                "choix4": [
+                    "Choix 4",
+                    "Séquence 2"
+                ]
+            }
+        },
+        "Séquence 2": {
+            "url": "videos\/1.mp4",
+            "duree_choix": 4000,
+            "choix": {}
+        }
+    },
+    "construct": {
+        "nodes": {
+            "node-1": {
+                "id": "node-1",
+                "name": "noir",
+                "x": -240,
+                "y": -120,
+                "url": "videos\/2.mp4",
+                "timer": 4000,
+                "choices": [
+                    "d1dddzd",
+                    "Choix 2zd",
+                    "Choix 3",
+                    "Choix 4"
+                ]
+            },
+            "node-2": {
+                "id": "node-2",
+                "name": "Séquence 2",
+                "x": 280,
+                "y": -80,
+                "url": "videos\/1.mp4",
+                "timer": 4000,
+                "choices": [
+                    "Choix 1"
+                ]
+            }
+        },
+        "links": {
+            "L1764249111577_i4v7biw0u": {
+                "id": "L1764249111577_i4v7biw0u",
+                "srcNode": "node-1",
+                "srcPort": "d1dddzd_out",
+                "tgtNode": "node-2",
+                "tgtPort": "in"
+            },
+            "L1764249191256_o8c51btzu": {
+                "id": "L1764249191256_o8c51btzu",
+                "srcNode": "node-1",
+                "srcPort": "Choix 2zd_out",
+                "tgtNode": "node-2",
+                "tgtPort": "in"
+            },
+            "L1764249193494_ymmq0ht61": {
+                "id": "L1764249193494_ymmq0ht61",
+                "srcNode": "node-1",
+                "srcPort": "Choix 3_out",
+                "tgtNode": "node-2",
+                "tgtPort": "in"
+            },
+            "L1764249196194_s7xzqyzag": {
+                "id": "L1764249196194_s7xzqyzag",
+                "srcNode": "node-1",
+                "srcPort": "Choix 4_out",
+                "tgtNode": "node-2",
+                "tgtPort": "in"
+            }
+        },
+        "view": {
+            "x": 439.00000000000017,
+            "y": 334.16666666666697,
+            "z": 1
+        },
+        "nextId": 3
+    }
+}
