@@ -203,7 +203,27 @@ $selected_file = $_GET['scenario'] ?? ''; // Récupère le paramètre 'scenario'
         </header>
 
         <main class="flex-1 relative">
-            <div id="editor"></div>
+            <div id="editor">
+                <?php
+                // 5. CHARGEMENT ET AFFICHAGE DU CONTENU JSON SI UN FICHIER EST SÉLECTIONNÉ
+                $json_content = '{}';
+                if (!empty($selected_file)) {
+                    $full_path = $json_dir . $selected_file;
+
+                    // Vérifier que le fichier existe et est lisible pour éviter les erreurs
+                    if (file_exists($full_path) && is_readable($full_path)) {
+                        $json_content = file_get_contents($full_path);
+                        // S'assurer que le JSON est valide avant de l'injecter
+                        if (json_decode($json_content) === null && json_last_error() !== JSON_ERROR_NONE) {
+                            $json_content = '{}'; // Revenir à un JSON vide si le fichier est corrompu
+                            echo '<script>alert("Erreur : Le fichier ' . htmlspecialchars($selected_file) . ' est corrompu.");</script>';
+                        }
+                    } else {
+                        echo '<script>alert("Erreur : Fichier ' . htmlspecialchars($selected_file) . ' introuvable ou illisible.");</script>';
+                    }
+                }
+                ?>
+            </div>
             <svg id="svg-container"
                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
         </main>
