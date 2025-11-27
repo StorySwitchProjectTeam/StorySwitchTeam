@@ -1,5 +1,33 @@
+<?php
+// 1. Définir le répertoire où sont stockés les fichiers JSON
+$json_dir = 'json/';
+$files = [];
+
+// 2. Scanner le répertoire
+if (is_dir($json_dir)) {
+    // scandir() retourne un tableau de fichiers et répertoires
+    $all_files = scandir($json_dir);
+
+    // 3. Filtrer pour ne garder que les fichiers .json
+    foreach ($all_files as $file) {
+        // Ignorer '.' et '..' et s'assurer que c'est un fichier .json
+        if ($file !== '.' && $file !== '..' && pathinfo($file, PATHINFO_EXTENSION) === 'json') {
+            $files[] = $file;
+        }
+    }
+} else {
+    // Gérer l'erreur si le répertoire n'existe pas
+    // Vous pourriez afficher un message d'erreur ou simplement laisser le tableau $files vide
+    error_log("Le répertoire 'json/' est introuvable.");
+}
+
+// 4. Déterminer le fichier actuellement sélectionné (si un chargement a été tenté)
+$selected_file = $_GET['scenario'] ?? ''; // Récupère le paramètre 'scenario' de l'URL
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +38,15 @@
         #editor {
             width: 2000vw;
             height: 2000vh;
-            background-color: #2d3748; /* gray-800 */
+            background-color: #2d3748;
+            /* gray-800 */
             background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
             background-size: 20px 20px;
             position: relative;
             overflow: hidden;
-            touch-action: none; /* Désactiver le pinch-zoom sur mobile */
+            touch-action: none;
+            /* Désactiver le pinch-zoom sur mobile */
         }
 
         header {
@@ -25,12 +55,14 @@
             left: 0;
             right: 0;
         }
-        
+
         /* Style pour les nœuds */
         .node {
             position: absolute;
-            background-color: #4a5568; /* gray-700 */
-            border: 2px solid #1a202c; /* gray-900 */
+            background-color: #4a5568;
+            /* gray-700 */
+            border: 2px solid #1a202c;
+            /* gray-900 */
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             min-width: 220px;
@@ -39,7 +71,8 @@
 
         .node-header {
             padding: 8px 12px;
-            background-color: #2d3748; /* gray-800 */
+            background-color: #2d3748;
+            /* gray-800 */
             border-top-left-radius: 6px;
             border-top-right-radius: 6px;
         }
@@ -47,16 +80,24 @@
         .port {
             width: 12px;
             height: 12px;
-            border: 2px solid #1a202c; /* gray-900 */
-            flex-shrink: 0; /* Empêcher de rétrécir */
+            border: 2px solid #1a202c;
+            /* gray-900 */
+            flex-shrink: 0;
+            /* Empêcher de rétrécir */
         }
 
-        .input-port { cursor: pointer; }
-        .output-port { cursor: crosshair; }
+        .input-port {
+            cursor: pointer;
+        }
+
+        .output-port {
+            cursor: crosshair;
+        }
 
         /* Ligne de connexion temporaire */
         #temp-link {
-            stroke: #e2e8f0; /* gray-300 */
+            stroke: #e2e8f0;
+            /* gray-300 */
             stroke-width: 3;
             stroke-dasharray: 5, 5;
             fill: none;
@@ -65,18 +106,23 @@
 
         /* Ligne de connexion finale */
         .link {
-            stroke: #f6e05e; /* yellow-400 */
+            stroke: #f6e05e;
+            /* yellow-400 */
             stroke-width: 3;
             fill: none;
             cursor: pointer;
             transition: stroke 0.15s ease-in-out;
         }
+
         .link:hover {
-            stroke: #ef4444; /* red-500 */
+            stroke: #ef4444;
+            /* red-500 */
         }
 
         /* Empêcher le défilement pendant le drag */
-        body.no-scroll { overflow: hidden; }
+        body.no-scroll {
+            overflow: hidden;
+        }
 
         /* Styles pour les nouveaux champs de données */
         .data-field {
@@ -85,58 +131,83 @@
             margin-bottom: 6px;
             padding: 0 12px;
         }
+
         .data-field label {
             font-size: 0.8rem;
-            color: #cbd5e0; /* gray-400 */
+            color: #cbd5e0;
+            /* gray-400 */
             margin-right: 8px;
-            min-width: 90px; /* Aligner les inputs */
+            min-width: 90px;
+            /* Aligner les inputs */
         }
-        .data-field input, .data-field select {
+
+        .data-field input,
+        .data-field select {
             font-size: 0.8rem;
-            background-color: #2d3748; /* gray-800 */
+            background-color: #2d3748;
+            /* gray-800 */
             color: white;
-            border: 1px solid #718096; /* gray-500 */
+            border: 1px solid #718096;
+            /* gray-500 */
             border-radius: 4px;
             padding: 2px 4px;
             width: 100%;
             box-sizing: border-box;
         }
-
     </style>
 </head>
+
 <body class="bg-gray-900 text-gray-100 font-sans h-screen m-0">
 
     <div class="flex flex-col h-screen">
-        
+
         <header class="bg-gray-800 text-white p-2 flex justify-between items-center shadow-md z-20">
             <h1 class="text-xl font-semibold">Éditeur de Film Interactif</h1>
-            <div class="flex gap-2">
-                <button id="load-videos-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+            <div class="flex gap-2 items-center"> <select id="json-file-select"
+                    class="bg-gray-700 text-white border border-gray-600 rounded py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" disabled selected>Choisir un scénario...</option>
+                    <?php foreach ($files as $file_name): ?>
+                        <option value="<?php echo htmlspecialchars($file_name); ?>" <?php echo ($file_name === $selected_file) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($file_name); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <button id="load-selected-json-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                    Charger Scénario
+                </button>
+                <button id="load-videos-btn"
+                    class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Charger le dossier Vidéos
                 </button>
                 <input type="file" id="video-folder-input" webkitdirectory directory style="display: none;" />
 
-                <button id="add-node-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                <button id="add-node-btn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Ajouter un Nœud
                 </button>
-                <button id="import-json-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                <button id="import-json-btn"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Importer JSON
                 </button>
-                <button id="export-json-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded transition duration-150">
+                <button id="export-json-btn"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded transition duration-150">
                     Exporter JSON
                 </button>
-                
-                <a href="index.html" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+
+                <a href="index.html" target="_blank"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Lancer le Lecteur
                 </a>
-                </div>
+            </div>
         </header>
 
         <main class="flex-1 relative">
             <div id="editor"></div>
-            <svg id="svg-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
+            <svg id="svg-container"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
         </main>
-        
+
     </div>
 
     <div id="json-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -145,13 +216,16 @@
                 <h2 id="json-modal-title" class="text-2xl font-bold text-white">JSON</h2>
                 <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl">&times;</button>
             </div>
-            <textarea id="json-output" class="w-full h-64 bg-gray-900 text-gray-200 font-mono p-2 rounded border border-gray-600"></textarea>
+            <textarea id="json-output"
+                class="w-full h-64 bg-gray-900 text-gray-200 font-mono p-2 rounded border border-gray-600"></textarea>
             <p id="import-error-msg" class="text-red-500 text-sm mt-2"></p>
             <div class="mt-4 flex justify-end gap-3">
-                <button id="save-to-player-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                <button id="save-to-player-btn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Sauvegarder pour le lecteur
                 </button>
-                <button id="json-modal-confirm-import" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                <button id="json-modal-confirm-import"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Valider l'Importation
                 </button>
             </div>
@@ -161,7 +235,7 @@
 
     <script type="module">
         // --- Variables Globales ---
-        
+
         // État de l'éditeur
         const editor = document.getElementById('editor');
         const svgContainer = document.getElementById('svg-container');
@@ -171,7 +245,7 @@
         // État du Drag-and-Drop
         let draggedNode = null;
         let offset = { x: 0, y: 0 };
-        
+
         // État de la Création de Lien
         let startPort = null;
         let currentLink = null;
@@ -237,7 +311,7 @@
             editor.addEventListener('mousemove', drag);
             editor.addEventListener('mouseup', endDrag);
             editor.addEventListener('mouseleave', endDrag); // Arrêter si la souris quitte
-            
+
             // Empêcher la sélection de texte pendant le drag
             editor.addEventListener('selectstart', (e) => e.preventDefault());
         }
@@ -251,13 +325,13 @@
          */
         function saveNode(nodeData) {
             graphData.nodes[nodeData.id] = nodeData;
-            
+
             // Re-rendu complet pour refléter les changements (url, choix, etc.)
             const existingEl = document.getElementById(nodeData.id);
             if (existingEl) {
                 existingEl.remove();
             }
-            renderNode(nodeData); 
+            renderNode(nodeData);
             updateAllLinks(); // Mettre à jour les liens vers ce nœud
         }
 
@@ -299,7 +373,7 @@
                 input.type = 'text';
                 input.value = nodeData.name;
                 input.className = 'bg-gray-900 text-white font-semibold text-lg w-full rounded border border-blue-500 p-0.5 m-2 box-border';
-                
+
                 const saveRename = () => {
                     const newName = input.value.trim();
                     if (newName && newName !== nodeData.name) {
@@ -331,7 +405,7 @@
                         header.classList.remove('hidden');
                     }
                 });
-                
+
                 header.parentNode.insertBefore(input, header.nextSibling);
                 input.focus();
                 input.select();
@@ -348,7 +422,7 @@
                 deleteNode(nodeData.id);
             });
             nodeEl.appendChild(deleteBtn);
-            
+
             // Conteneur principal (Entrée + Champs de données)
             const mainContent = document.createElement('div');
             mainContent.className = 'p-3';
@@ -368,17 +442,17 @@
             const createDataField = (label, property, type = 'text', placeholder = '') => {
                 const field = document.createElement('div');
                 field.className = 'data-field';
-                
+
                 const labelEl = document.createElement('label');
                 labelEl.textContent = label;
                 field.appendChild(labelEl);
-                
+
                 const inputEl = document.createElement('input');
                 inputEl.type = type;
                 inputEl.value = nodeData[property] || (type === 'number' ? 0 : '');
                 inputEl.placeholder = placeholder;
                 inputEl.addEventListener('mousedown', e => e.stopPropagation()); // Ne pas dragger
-                
+
                 inputEl.addEventListener('change', (e) => {
                     let value = e.target.value;
                     if (type === 'number') {
@@ -388,7 +462,7 @@
                     nodeData[property] = value;
                     saveNode(nodeData); // Sauvegarder au changement (appel sync)
                 });
-                
+
                 field.appendChild(inputEl);
                 mainContent.appendChild(field);
             };
@@ -396,41 +470,41 @@
             // Input URL (Menu déroulant)
             const urlField = document.createElement('div');
             urlField.className = 'data-field';
-            
+
             const urlLabel = document.createElement('label');
             urlLabel.textContent = 'Vidéo:';
             urlField.appendChild(urlLabel);
-            
+
             const selectEl = document.createElement('select');
             selectEl.className = 'w-full'; // Tailwind gérera le style via .data-field select
             selectEl.addEventListener('mousedown', e => e.stopPropagation()); // Ne pas dragger
-            
+
             const defaultOpt = document.createElement('option');
             defaultOpt.value = "";
             defaultOpt.textContent = "-- Choisir une vidéo --";
             selectEl.appendChild(defaultOpt);
-            
+
             // On utilise la liste globale (chargée au démarrage)
             videoFileList.forEach(videoPath => {
                 const opt = document.createElement('option');
                 opt.value = videoPath;
                 const fileName = videoPath.substring(videoPath.lastIndexOf('/') + 1);
                 opt.textContent = fileName;
-                
+
                 if (videoPath === nodeData.url) {
                     opt.selected = true; // Sélectionner la valeur sauvegardée
                 }
                 selectEl.appendChild(opt);
             });
-            
+
             selectEl.addEventListener('change', () => {
                 nodeData.url = selectEl.value;
                 saveNode(nodeData); // Sauvegarder au changement
             });
-            
+
             urlField.appendChild(selectEl);
             mainContent.appendChild(urlField);
-            
+
             createDataField('Durée Choix (ms):', 'duree_choix', 'number', '4000');
 
             // --- Logique des Choix Personnalisés ---
@@ -452,7 +526,7 @@
                 // 1. Label du Choix (Renommable) + Bouton Supprimer
                 const centerDiv = document.createElement('div');
                 centerDiv.className = 'flex-1 flex items-center justify-start min-w-0 px-1';
-                
+
                 const label = document.createElement('span');
                 label.className = 'truncate cursor-text hover:text-white';
                 label.textContent = choiceLabel;
@@ -499,12 +573,12 @@
                     input.focus();
                     input.select();
                 });
-                
+
                 const deleteChoiceBtn = document.createElement('button');
                 deleteChoiceBtn.innerHTML = '&times;';
                 deleteChoiceBtn.className = 'text-red-500 hover:text-red-300 font-bold ml-2 text-base leading-none';
                 deleteChoiceBtn.title = 'Supprimer ce choix';
-                
+
                 deleteChoiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
                 deleteChoiceBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -512,7 +586,7 @@
                     nodeData.choices = nodeData.choices.filter(label => label !== choiceLabel);
                     saveNode(nodeData); // Appel sync
                 });
-                
+
                 centerDiv.appendChild(deleteChoiceBtn);
                 choiceRow.appendChild(centerDiv);
 
@@ -530,12 +604,12 @@
             const addChoiceBtn = document.createElement('button');
             addChoiceBtn.textContent = 'Ajouter Choix';
             addChoiceBtn.className = 'mt-2 text-xs bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 rounded w-full transition duration-150';
-            
+
             if (nodeData.choices.length >= 4) {
                 addChoiceBtn.disabled = true;
                 addChoiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            
+
             addChoiceBtn.addEventListener('mousedown', (e) => e.stopPropagation());
             addChoiceBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -545,7 +619,7 @@
                     saveNode(nodeData); // Appel sync
                 }
             });
-            
+
             mainContent.appendChild(addChoiceBtn);
 
             return nodeEl;
@@ -566,7 +640,7 @@
             nodeEl.style.left = `${nodeData.position.x}px`;
             nodeEl.style.top = `${nodeData.position.y}px`;
         }
-        
+
         /**
          * Ajoute un nouveau nœud (via bouton ou import).
          * @param {number} x Position X.
@@ -575,7 +649,7 @@
          */
         function addNewNode(x, y, importData = null) {
             let newNodeData;
-            
+
             if (importData) {
                 newNodeData = {
                     id: importData.id,
@@ -601,14 +675,14 @@
                     duree_choix: 0
                 };
             }
-            
+
             const idNum = parseInt(newNodeData.id.split('-')[1]);
             if (idNum >= nextNodeId) {
                 nextNodeId = idNum + 1;
             }
 
             saveNode(newNodeData); // Appel sync (va sauvegarder ET rendre)
-            return newNodeData; 
+            return newNodeData;
         }
 
         // --- Fonctions de Liens (Création et Rendu) ---
@@ -625,12 +699,12 @@
                 path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 path.id = pathId;
                 path.classList.add('link');
-                
+
                 path.addEventListener('click', (e) => {
                     e.stopPropagation();
                     deleteLink(pathId);
                 });
-                
+
                 svgContainer.appendChild(path);
             }
 
@@ -655,7 +729,7 @@
             }
 
             const svgRect = svgContainer.getBoundingClientRect();
-            
+
             const startRect = sourcePortEl.getBoundingClientRect();
             const endRect = targetPortEl.getBoundingClientRect();
 
@@ -663,9 +737,9 @@
             const startY = startRect.top + startRect.height / 2 - svgRect.top;
             const endX = endRect.left + endRect.width / 2 - svgRect.left;
             const endY = endRect.top + endRect.height / 2 - svgRect.top;
-            
+
             const dx = Math.abs(endX - startX);
-            const ctrlX1 = startX + dx * 0.5; 
+            const ctrlX1 = startX + dx * 0.5;
             const ctrlY1 = startY;
             const ctrlX2 = endX - dx * 0.5;
             const ctrlY2 = endY;
@@ -686,7 +760,7 @@
                 }
             });
         }
-        
+
         /**
          * Supprime un lien (DOM et modèle local).
          * @param {string} linkId L'ID du lien.
@@ -705,10 +779,10 @@
         function deleteLinksForPort(nodeId, portId) {
             const linksToDelete = Object.values(graphData.links).filter(
                 link => (link.source === nodeId && link.source_port === portId) ||
-                        (link.target === nodeId && link.target_port === portId)
+                    (link.target === nodeId && link.target_port === portId)
             );
             linksToDelete.forEach(link => {
-                deleteLink(link.id); 
+                deleteLink(link.id);
             });
         }
 
@@ -721,7 +795,7 @@
             const linksToDelete = Object.values(graphData.links).filter(
                 link => link.source === nodeId || link.target === nodeId
             );
-            linksToDelete.forEach(link => deleteLink(link.id)); 
+            linksToDelete.forEach(link => deleteLink(link.id));
 
             // 2. Supprimer le nœud du DOM
             const nodeEl = document.getElementById(nodeId);
@@ -739,34 +813,34 @@
          */
         function startDrag(e) {
             e.stopPropagation();
-            
+
             const target = e.target;
-            
+
             const nodeHeader = target.closest('.node-header');
             if (nodeHeader) {
                 draggedNode = nodeHeader.closest('.node');
-                draggedNode.style.zIndex = 20; 
-                
+                draggedNode.style.zIndex = 20;
+
                 const rect = draggedNode.getBoundingClientRect();
                 const editorRect = editor.getBoundingClientRect();
-                
+
                 offset.x = e.clientX - rect.left + editorRect.left;
                 offset.y = e.clientY - rect.top + editorRect.top;
 
-                document.body.classList.add('no-scroll'); 
+                document.body.classList.add('no-scroll');
                 return;
             }
 
             const portEl = target.closest('.output-port');
             if (portEl) {
                 e.stopPropagation();
-                
+
                 startPort = {
                     element: portEl,
                     nodeId: portEl.dataset.nodeId,
                     portId: portEl.dataset.portId
                 };
-                
+
                 if (!currentLink) {
                     currentLink = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     currentLink.id = 'temp-link';
@@ -782,7 +856,7 @@
          */
         function drag(e) {
             e.preventDefault();
-            
+
             if (draggedNode) {
                 const editorRect = editor.getBoundingClientRect();
                 let x = e.clientX - offset.x - editorRect.left;
@@ -798,15 +872,15 @@
                 if (nodeData) {
                     nodeData.position = { x, y };
                 }
-                
-                updateAllLinks(); 
+
+                updateAllLinks();
                 return;
             }
 
             if (startPort) {
                 const svgRect = svgContainer.getBoundingClientRect();
                 const startRect = startPort.element.getBoundingClientRect();
-                
+
                 const startX = startRect.left + startRect.width / 2 - svgRect.left;
                 const startY = startRect.top + startRect.height / 2 - svgRect.top;
                 const endX = e.clientX - svgRect.left;
@@ -842,7 +916,7 @@
 
             if (startPort) {
                 const targetElement = e.target.closest('.input-port');
-                
+
                 if (targetElement && targetElement.dataset.nodeId !== startPort.nodeId) {
                     const newLink = {
                         id: `link-${Date.now()}`,
@@ -871,7 +945,7 @@
         function exportGraphToJson() {
             const dataFilm = {};
             const nodesById = graphData.nodes;
-            
+
             try {
                 for (const node of Object.values(nodesById)) {
                     const nodeName = node.name;
@@ -886,7 +960,7 @@
                             const link = Object.values(graphData.links).find(
                                 l => l.source === node.id && l.source_port === portId
                             );
-                            
+
                             let targetNodeName = null;
                             if (link) {
                                 const targetNode = nodesById[link.target];
@@ -902,7 +976,7 @@
                         url: node.url || '',
                         duree_choix: node.duree_choix || 0,
                     };
-                    
+
                     if (Object.keys(choixObj).length > 0) {
                         const finalChoixObj = {};
                         Object.values(choixObj).forEach((choiceArray, index) => {
@@ -914,7 +988,7 @@
 
                 const constructData = {
                     nodes: Object.values(graphData.nodes).map(n => ({ ...n })),
-                    links: Object.values(graphData.links).map(l => ({ ...l })) 
+                    links: Object.values(graphData.links).map(l => ({ ...l }))
                 };
 
                 const finalExportData = {
@@ -925,7 +999,7 @@
                 jsonOutput.value = JSON.stringify(finalExportData, null, 2);
                 jsonModalTitle.textContent = "Exporter au format data_film + construct";
                 confirmImportBtn.classList.add('hidden');
-                saveToPlayerBtn.classList.remove('hidden'); 
+                saveToPlayerBtn.classList.remove('hidden');
                 importErrorMsg.textContent = "";
                 jsonModal.classList.remove('hidden');
                 jsonOutput.readOnly = true;
@@ -937,7 +1011,7 @@
                 setTimeout(() => importErrorMsg.textContent = "", 3000);
             }
         }
-        
+
         /**
          * Affiche la modale d'importation.
          */
@@ -945,7 +1019,7 @@
             jsonOutput.value = "";
             jsonModalTitle.textContent = "Importer depuis data_film JSON";
             confirmImportBtn.classList.remove('hidden');
-            saveToPlayerBtn.classList.add('hidden'); 
+            saveToPlayerBtn.classList.add('hidden');
             importErrorMsg.textContent = "";
             jsonModal.classList.remove('hidden');
             jsonOutput.readOnly = false;
@@ -976,7 +1050,7 @@
                     console.log("Détection du format 'data_film'. Démarrage de l'importation...");
                     importFromDataFilm(importData); // Appel sync
                 }
-                
+
                 console.log("Importation terminée.");
                 jsonModal.classList.add('hidden');
             } catch (error) {
@@ -984,7 +1058,7 @@
                 importErrorMsg.textContent = `Erreur d'importation: ${error.message}`;
             }
         }
-        
+
         /**
          * Sauvegarde la partie data_film dans le localStorage.
          */
@@ -1008,20 +1082,19 @@
                     jsonModal.classList.add('hidden');
                 }, 1500);
 
-            } catch (error)
-                {
+            } catch (error) {
                 importErrorMsg.textContent = `Erreur de sauvegarde: ${error.message}`;
                 console.error("Erreur sauvegarde localStorage:", error);
             }
         }
-        
+
         /**
          * Importe un graphe depuis l'ancien format 'data_film'.
          * @param {Object} importData L'objet data_film.
          */
         function importFromDataFilm(importData) {
             clearCurrentGraph();
-            
+
             // Charger la liste existante
             let existingList = [];
             const savedVideoList = localStorage.getItem('storyswitch_videoList');
@@ -1030,20 +1103,20 @@
             }
 
             const allUrls = Object.values(importData)
-                                .map(data => data.url)
-                                .filter(Boolean);
+                .map(data => data.url)
+                .filter(Boolean);
             // Fusionner et sauvegarder
             videoFileList = [...new Set([...existingList, ...allUrls])].sort();
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
-            
-            const nodeNameMap = {}; 
+
+            const nodeNameMap = {};
             const nodePositions = generateCircularPositions(Object.keys(importData).length, editor.clientWidth / 2, editor.clientHeight / 2, 250);
             let index = 0;
-            
+
             for (const nodeName in importData) {
                 const data = importData[nodeName];
                 const choiceLabels = data.choix ? Object.values(data.choix).map(arr => arr[0]) : [];
-                
+
                 const nodeToImport = {
                     id: `node-${index + 1}`,
                     name: nodeName,
@@ -1054,39 +1127,39 @@
                     url: data.url || '',
                     duree_choix: data.duree_choix || 0
                 };
-                
+
                 const newNode = addNewNode(nodePositions[index].x, nodePositions[index].y, nodeToImport); // Appel sync
-                graphData.nodes[newNode.id] = newNode; 
-                nodeNameMap[nodeName] = newNode.id; 
-                
+                graphData.nodes[newNode.id] = newNode;
+                nodeNameMap[nodeName] = newNode.id;
+
                 index++;
             }
 
             for (const sourceNodeName in importData) {
                 const data = importData[sourceNodeName];
                 if (!data.choix) continue;
-                
+
                 const sourceNodeId = nodeNameMap[sourceNodeName];
-                if (!sourceNodeId) continue; 
-                
+                if (!sourceNodeId) continue;
+
                 for (const choiceKey in data.choix) {
                     const choiceArray = data.choix[choiceKey];
                     const choiceLabel = choiceArray[0];
                     const targetNodeName = choiceArray[1];
-                    
+
                     if (targetNodeName && nodeNameMap[targetNodeName]) {
                         const targetNodeId = nodeNameMap[targetNodeName];
-                        
+
                         const newLink = {
                             id: `link-${Date.now()}-${Math.random()}`,
                             source: sourceNodeId,
-                            source_port: `${choiceLabel}_out`, 
+                            source_port: `${choiceLabel}_out`,
                             target: targetNodeId,
-                            target_port: 'Entrée' 
+                            target_port: 'Entrée'
                         };
-                        
+
                         saveLink(newLink); // Appel sync
-                        graphData.links[newLink.id] = newLink; 
+                        graphData.links[newLink.id] = newLink;
                     }
                 }
             }
@@ -1098,7 +1171,7 @@
          */
         function importFromConstruct(constructData) {
             clearCurrentGraph();
-            
+
             // Charger la liste existante
             let existingList = [];
             const savedVideoList = localStorage.getItem('storyswitch_videoList');
@@ -1107,22 +1180,22 @@
             }
 
             const allUrls = constructData.nodes
-                                .map(node => node.url)
-                                .filter(Boolean);
+                .map(node => node.url)
+                .filter(Boolean);
             // Fusionner et sauvegarder
             videoFileList = [...new Set([...existingList, ...allUrls])].sort();
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
-            
+
             for (const node of constructData.nodes) {
                 const pos = node.position || { x: 50, y: 50 };
                 // addNewNode va maintenant ignorer 'duree' s'il existe dans le JSON
-                const newNode = addNewNode(pos.x, pos.y, node); 
-                graphData.nodes[newNode.id] = newNode; 
+                const newNode = addNewNode(pos.x, pos.y, node);
+                graphData.nodes[newNode.id] = newNode;
             }
 
             for (const link of constructData.links) {
-                saveLink(link); 
-                graphData.links[link.id] = link; 
+                saveLink(link);
+                graphData.links[link.id] = link;
             }
         }
 
@@ -1144,7 +1217,7 @@
             const positions = [];
             const angleStep = (2 * Math.PI) / count;
             for (let i = 0; i < count; i++) {
-                const x = centerX + radius * Math.cos(i * angleStep - Math.PI / 2); 
+                const x = centerX + radius * Math.cos(i * angleStep - Math.PI / 2);
                 const y = centerY + radius * Math.sin(i * angleStep - Math.PI / 2);
                 positions.push({ x: Math.round(x), y: Math.round(y) });
             }
@@ -1164,18 +1237,18 @@
             for (const file of files) {
                 const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
                 if (videoExtensions.includes(extension)) {
-                    
+
                     const relativePath = file.webkitRelativePath.replace(/\\/g, '/');
-                    
+
                     if (relativePath.split('/').length === 2) {
                         newVideoPaths.push(relativePath);
                     }
                 }
             }
-            
+
             // Fusionne avec la liste existante
             const combinedList = [...new Set([...videoFileList, ...newVideoPaths])];
-            videoFileList = combinedList.sort(); 
+            videoFileList = combinedList.sort();
 
             // Sauvegarde la liste mise à jour
             localStorage.setItem('storyswitch_videoList', JSON.stringify(videoFileList));
@@ -1190,8 +1263,8 @@
             });
 
             console.log("Vidéos chargées et sauvegardées:", videoFileList);
-            
-            videoFolderInput.value = ""; 
+
+            videoFolderInput.value = "";
         }
 
         // --- Démarrage ---
@@ -1199,4 +1272,5 @@
 
     </script>
 </body>
+
 </html>
