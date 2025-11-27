@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StorySwitch Editor Ultimate V11 (Server Mode)</title>
+    <title>StorySwitch Editor V11 (Server)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- DESIGN SYSTEM V11 --- */
+        /* --- DESIGN SYSTEM V11 (Copie Exacte index.html) --- */
         :root {
             --bg-deep: #09090b;
             --bg-panel: #18181b;
@@ -503,7 +503,7 @@
                 <i class="fa-solid fa-network-wired text-white text-sm"></i>
             </div>
             <h1 class="font-bold text-white text-lg">StorySwitch <span
-                    class="text-xs text-blue-400 ml-1 uppercase tracking-widest">PHP</span></h1>
+                    class="text-xs text-blue-400 ml-1 uppercase tracking-widest">V11 SERVER</span></h1>
             <div class="h-6 w-px bg-white/10 mx-2"></div>
             <div class="relative">
                 <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
@@ -1112,10 +1112,8 @@
                         m.style.left = e.clientX + 'px';
                         m.style.top = e.clientY + 'px';
                         m.style.display = 'block';
+                        // On passe les valeurs primitives
                         m.innerHTML = `<div class="ctx-item text-blue-400 font-bold" onclick="ctxAction('link-create', ${wm.x}, ${wm.y}, '${App.linking.nid}', '${App.linking.pid}')"><i class="fa-solid fa-bolt mr-2"></i> Créer Scène liée</div>`;
-
-                        // Petite astuce pour garder le lien visuel actif ou juste le supprimer et le recréer après
-                        // Ici on supprime le temp-link, mais l'action recréera tout
                     }
                     document.getElementById('temp-link')?.remove(); App.linking = null;
                 }
@@ -1150,14 +1148,13 @@
                 const n = e.target.closest('.node');
                 m.style.left = e.clientX + 'px'; m.style.top = e.clientY + 'px'; m.style.display = 'block';
 
-                // Correction du passage d'objets dans le HTML string
                 if (n) {
+                    // Passage d'arguments primitives uniquement
                     m.innerHTML = `<div class="ctx-item" onclick="ctxAction('ren','${n.id}')">Renommer</div>
                                  <div class="ctx-item" onclick="ctxAction('dupe','${n.id}')">Dupliquer</div>
                                  <div class="ctx-item" style="color:#ef4444;" onclick="ctxAction('del','${n.id}')">Supprimer</div>`;
                 } else {
                     const wm = s2w(e.clientX, e.clientY);
-                    // On passe x et y comme arguments séparés pour éviter les [object Object]
                     m.innerHTML = `<div class="ctx-item" onclick="ctxAction('add', ${wm.x}, ${wm.y})">Ajouter Scène</div>
                                  <div class="ctx-item" onclick="ctxAction('center')">Recentrer Vue</div>`;
                 }
@@ -1256,15 +1253,14 @@
             } return positions;
         }
 
+        // Action globale pour les clics contextuels
         window.ctxAction = (act, p1, p2, p3, p4) => {
-            // p1, p2 = x, y ou id selon le contexte
             if (act === 'ren') openRen(p1);
             if (act === 'del') { delNode(p1); saveState("Del"); }
             if (act === 'add') { createNode(p1, p2); saveState("Add"); }
             if (act === 'dupe') { const s = App.nodes[p1]; createNode(s.x + 50, s.y + 50, { ...s, id: null, name: s.name + ' (Copy)' }); saveState("Dupe"); }
             if (act === 'center') centerCam();
             if (act === 'link-create') {
-                // p1=x, p2=y, p3=sourceNodeId, p4=sourcePortId
                 const newNode = createNode(p1, p2);
                 mkLink(p3, p4, newNode.id, 'in');
                 saveState("LinkCreate");
