@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StorySwitch Editor V11.0.4</title>
+    <title>StorySwitch Editor V11 (Server)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -314,6 +314,7 @@
             
             // Chargement initial Serveur
             fetchVideos();
+            fetchJsonList(); // Ajout pour peupler la liste d'import dès le départ
             
             // Créer une scène par défaut
             const start = createNode(innerWidth/2 - 140, innerHeight/2 - 100, {name:'intro'});
@@ -447,35 +448,65 @@
         }
 
         function loadProject(d) {
-            DOM.nLayer.innerHTML=''; DOM.sLayer.innerHTML=''; App.nodes={}; App.links={};
+            // Nettoyage complet
+            DOM.nLayer.innerHTML=''; DOM.sLayer.innerHTML=''; 
+            App.nodes={}; App.links={};
+            
             if(d.construct) { 
                 App.nodes=d.construct.nodes; App.links=d.construct.links; 
                 App.view=d.construct.view || {x:0, y:0, z:1}; 
                 App.nextId=d.construct.nextId || 100; 
-            } else {
-                // Importation depuis format "data_film" seul (mode compatibilité)
-                let idx = 1;
-                const pos = generateCircularPositions(Object.keys(d).length, innerWidth/2, innerHeight/2, 300);
-                const map = {};
-                Object.keys(d).forEach((k, i) => {
-                    const id = `node-${idx++}`; map[k] = id;
-                    App.nodes[id] = { id, name:k, x:pos[i].x, y:pos[i].y, url:d[k].url||'', timer:d[k].duree_choix||0, choices:[] };
-                    if(d[k].choix) {
-                        Object.values(d[k].choix).forEach(c => App.nodes[id].choices.push(c[0]));
+                
+                // IMPORTANT: Vérification des coordonnées si elles manquent (vieux bug)
+                Object.values(App.nodes).forEach(n => {
+                    if (isNaN(n.x) || isNaN(n.y)) {
+                        n.x = 100; n.y = 100; // Position safe par défaut
                     }
                 });
-                // Liens
-                Object.keys(d).forEach(k => {
-                   if(d[k].choix) {
-                       Object.values(d[k].choix).forEach(c => {
+                
+            } else {
+                // Importation depuis format "data_film" seul (mode compatibilité)
+                // Ici on génère des positions circulaires pour éviter l'empilement
+                let idx = 1;
+                const nodeKeys = Object.keys(d.data_film || d); // Supporte structure directe ou imbriquée
+                const pos = generateCircularPositions(nodeKeys.length, innerWidth/2, innerHeight/2, 350);
+                const map = {};
+                
+                // 1. Création des nœuds
+                nodeKeys.forEach((k, i) => {
+                    const id = `node-${idx++}`; map[k] = id;
+                    // On récupère les données soit de data_film, soit directement
+                    const nodeData = (d.data_film && d.data_film[k]) ? d.data_film[k] : d[k];
+                    
+                    App.nodes[id] = { 
+                        id, name:k, 
+                        x:pos[i].x, y:pos[i].y, 
+                        url:nodeData.url||'', 
+                        timer:nodeData.duree_choix||0, 
+                        choices:[] 
+                    };
+                    
+                    if(nodeData.choix) {
+                        Object.values(nodeData.choix).forEach(c => App.nodes[id].choices.push(c[0]));
+                    }
+                });
+                
+                // 2. Création des liens
+                nodeKeys.forEach((k) => {
+                   const nodeData = (d.data_film && d.data_film[k]) ? d.data_film[k] : d[k];
+                   if(nodeData.choix) {
+                       Object.values(nodeData.choix).forEach(c => {
+                           // c[0] = label choix, c[1] = destination
                            if(c[1] && map[c[1]]) mkLink(map[k], `${c[0]}_out`, map[c[1]], 'in');
                        });
                    } 
                 });
                 App.nextId = idx + 1;
             }
+            
+            // Rendu final
             Object.values(App.nodes).forEach(n => renderNode(n));
-            Object.values(App.links).forEach(l => drawLink(l));
+            Object.values(App.links).forEach(l => drawLink(l)); // Utilisation de drawLink (et non renderLink)
             saveState("Load");
         }
 
@@ -828,7 +859,7 @@
                 try {
                     const d = JSON.parse(txt.value);
                     loadProject(d); mJson.classList.remove('active'); toast("Importé");
-                } catch(e) { alert("JSON Erreur"); }
+                } catch(e) { alert("JSON Erreur: "+e.message); }
             };
             
             document.getElementById('act-clear').onclick = () => { 
