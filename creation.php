@@ -163,19 +163,28 @@ $selected_file = $_GET['scenario'] ?? ''; // Récupère le paramètre 'scenario'
 
         <header class="bg-gray-800 text-white p-2 flex justify-between items-center shadow-md z-20">
             <h1 class="text-xl font-semibold">Éditeur de Film Interactif</h1>
-            <div class="flex gap-2 items-center"> <select id="json-file-select"
-                    class="bg-gray-700 text-white border border-gray-600 rounded py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="" disabled selected>Choisir un scénario...</option>
-                    <?php foreach ($files as $file_name): ?>
-                        <option value="<?php echo htmlspecialchars($file_name); ?>" <?php echo ($file_name === $selected_file) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($file_name); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button id="load-selected-json-btn"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150">
-                    Charger Scénario
-                </button>
+
+            <div class="flex gap-2 items-center">
+
+                <form method="get" class="flex gap-2 items-center">
+
+                    <select id="json-file-select" name="scenario"
+                        class="bg-gray-700 text-white border border-gray-600 rounded py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="" disabled <?php echo empty($selected_file) ? 'selected' : ''; ?>>Choisir un
+                            scénario...</option>
+                        <?php foreach ($files as $file_name): ?>
+                            <option value="<?php echo htmlspecialchars($file_name); ?>" <?php echo ($file_name === $selected_file) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($file_name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                        Charger Scénario
+                    </button>
+
+                </form>
                 <button id="load-videos-btn"
                     class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded transition duration-150">
                     Charger le dossier Vidéos
