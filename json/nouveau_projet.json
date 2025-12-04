@@ -1,0 +1,57 @@
+{
+    "data_film": {
+        "intro": {
+            "url": "videos\/1.mp4",
+            "duree_choix": 4000,
+            "choix": {
+                "choix1": [
+                    "Choix 1",
+                    "Séquence 2"
+                ]
+            }
+        },
+        "Séquence 2": {
+            "url": "videos\/2.mp4",
+            "duree_choix": 4000
+        }
+    },
+    "construct": {
+        "nodes": {
+            "node-1": {
+                "id": "node-1",
+                "name": "intro",
+                "x": 320,
+                "y": 160,
+                "url": "videos\/1.mp4",
+                "timer": 4000,
+                "choices": [
+                    "Choix 1"
+                ]
+            },
+            "node-2": {
+                "id": "node-2",
+                "name": "Séquence 2",
+                "x": 760,
+                "y": 200,
+                "url": "videos\/2.mp4",
+                "timer": 4000,
+                "choices": []
+            }
+        },
+        "links": {
+            "L1764251222306_nwni3ezjb": {
+                "id": "L1764251222306_nwni3ezjb",
+                "srcNode": "node-1",
+                "srcPort": "Choix 1_out",
+                "tgtNode": "node-2",
+                "tgtPort": "in"
+            }
+        },
+        "view": {
+            "x": -56,
+            "y": 47.349999999999994,
+            "z": 0.9
+        },
+        "nextId": 3
+    }
+}

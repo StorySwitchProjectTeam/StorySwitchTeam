@@ -9,10 +9,18 @@ body {
 }
 
 header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 0 30px;
     margin-left: 0;
     margin-right: 0;
     height: 100px;
     border-bottom: solid 2px #F2F2F2;
+}
+
+h1{
+    font-size: 28px;
 }
 
 main {
@@ -39,7 +47,7 @@ main {
 
 .element_liste {
     padding: 15px;
-    border-radius:  10px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
@@ -52,7 +60,8 @@ main {
 }
 
 .element_liste_open {
-    background: #5863FF !important;;
+    background: #5863FF !important;
+    ;
 }
 
 .element_liste span {
@@ -99,7 +108,8 @@ span svg {
 }
 
 .right_main {
-    margin: 40px 100px 100px 100px;
+    flex: 1;
+    margin: 40px 30px 100px 30px;
 }
 
 .element_sous_liste_open {
@@ -119,9 +129,39 @@ span svg {
 
 .right_main b {
     font-size: 35px;
+    display: block;
+    margin-bottom: 50px;
 }
 
 .right_main section p {
-    margin-top: 50px;
+    margin-left: 30px;
     width: 100vh;
+}
+
+.right_main section img {
+    width: 100%;
+    margin-left: 30px;
+}
+
+.wiki-btn {
+    background-color: #4a5568; 
+    color: #F2F2F2;
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+    font-family: Helvetica, sans-serif;
+    transition: background-color 0.2s ease; 
+}
+
+.wiki-btn:hover {
+    background-color: #5863FF; 
+}
+
+.wiki-btn-link {
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }

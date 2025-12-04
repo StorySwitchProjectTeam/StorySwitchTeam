@@ -1,0 +1,22 @@
+{
+    "intro": {
+        "url": "video/intro.mp4",
+        "duree_choix": 4000,
+        "choix": {
+            "choix1": ["Aller à droite", "tuto1"],
+            "choix2": ["Aller à gauche", "tuto2"]
+        }
+    },
+    "tuto1": {
+        "url": "video/1.mp4",
+        "duree_choix": 10000,
+        "choix": {
+            "choix1": ["Mourir", "intro"],
+            "choix2": ["Pas mourir", "tuto1"],
+            "choix3": ["Ne rien faire", "tuto2"]
+        }
+    },
+    "tuto2": {
+        "url": "video/2.mp4"
+    }
+}
