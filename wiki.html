@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Wiki de StorySwitch">
-    <title>Document</title>
+    <title>Wiki Storyswitch</title>
     <link rel="stylesheet" href="styles/wiki.css">
 </head>
 
 <body>
     <header>
         <h1>Wiki StorySwitch</h1>
-        <div>
-            <a href="creation.html" class="wiki-btn wiki-btn-link">Éditeur</a>
-        </div>
-
     </header>
     <main>
         <div class="menu_wiki">
+
             <div class="menu_liste">
+                <!-- ------------ -->
+                <!-- PRESENTATION -->
+                <!-- ------------ -->
                 <div class="element_liste" id="storyswitch">
                     <div class="element_nom">StorySwitch</div>
                     <span><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -36,9 +36,12 @@
                 <ul id="storyswitch_sous" class="element_sous_liste">
                     <li>Présentation</li>
                 </ul>
-                <div class="element_liste" id="creation">
-                    <div class="element_nom">Création</div>
-                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                <!-- ------------ -->
+                <!-- INTERFACE -->
+                <!-- ------------ -->
+                <div class="element_liste" id="interface">
+                    <div class="element_nom">Prise en main & Interface (Navigation)</div>
+                    <span><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                             transform="rotate(270)">
                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                             <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -49,14 +52,22 @@
                             </g>
                         </svg></span>
                 </div>
-                <ul id="creation_sous" class="element_sous_liste">
-                    <li>Importer un dossier de vidéos</li>
-                    <li>Relier les séquences (Interface à nœuds)</li>
-                    <li>Définir la durée des choix</li>
-                    <li>Exporter un projet</li>
+                <ul id="interface_sous" class="element_sous_liste">
+                    <li>Comment se déplacer dans la zone de travail (le fond quadrillé) ?
+                    </li>
+                    <li>Comment zoomer ou dézoomer ?
+                    </li>
+                    <li>Je suis perdu dans le vide, comment revenir aux scènes ?
+                    </li>
+                    <li>À quoi sert la petite carte en bas à gauche (Minimap) ?
+                    </li>
                 </ul>
-                <div class="element_liste" id="visionnage">
-                    <div class="element_nom">Visionnage Interactif</div>
+                <!-- ------------ -->
+                <!-- NOEUDS -->
+                <!-- ------------ -->
+                <div class="element_liste" id="noeud">
+                    <div class="element_nom">Gestion des Scènes (Nœuds)
+                    </div>
                     <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                             transform="rotate(270)">
                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -68,13 +79,122 @@
                             </g>
                         </svg></span>
                 </div>
-                <ul id="visionnage_sous" class="element_sous_liste">
-                    <li>Importer un projet</li>
-                    <li>Contrôles du lecteur</li>
-                    <li>Fonctionnement des choix interactifs</li>
+                <ul id="noeud_sous" class="element_sous_liste">
+                    <li>Comment créer une nouvelle scène ?</li>
+                    <li>Comment renommer une scène (ex: "Intro", "Fin A") ?</li>
+                    <li>Comment associer une vidéo à une scène ?</li>
+                    <li>À quoi sert le champ avec l'icône horloge ?</li>
+                    <li>Comment dupliquer une scène existante pour gagner du temps ?</li>
+                </ul>
+                <!-- ------------ -->
+                <!-- INTERACTIVITE -->
+                <!-- ------------ -->
+                <div class="element_liste" id="interactif">
+                    <div class="element_nom">Création de l'Interactivité (Liens & Choix)</div>
+                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            transform="rotate(270)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M5.70711 9.71069C5.31658 10.1012 5.31658 10.7344 5.70711 11.1249L10.5993 16.0123C11.3805 16.7927 12.6463 16.7924 13.4271 16.0117L18.3174 11.1213C18.708 10.7308 18.708 10.0976 18.3174 9.70708C17.9269 9.31655 17.2937 9.31655 16.9032 9.70708L12.7176 13.8927C12.3271 14.2833 11.6939 14.2832 11.3034 13.8927L7.12132 9.71069C6.7308 9.32016 6.09763 9.32016 5.70711 9.71069Z"
+                                    fill="#F2F2F2"></path>
+                            </g>
+                        </svg></span>
+                </div>
+                <ul id="interactif_sous" class="element_sous_liste">
+                    <li>Comment créer un choix pour le spectateur ?</li>
+                    <li>Comment relier deux scènes entre elles ?</li>
+                    <li>Comment supprimer un lien (câble) entre deux scènes ?</li>
+                    <li>Je veux créer une nouvelle scène directement liée à un choix, c'est possible ?</li>
+                </ul>
+                <!-- ------------ -->
+                <!-- GESTION VIDEOS -->
+                <!-- ------------ -->
+                <div class="element_liste" id="videos">
+                    <div class="element_nom">Gestion des Médias (Vidéos)</div>
+                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            transform="rotate(270)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M5.70711 9.71069C5.31658 10.1012 5.31658 10.7344 5.70711 11.1249L10.5993 16.0123C11.3805 16.7927 12.6463 16.7924 13.4271 16.0117L18.3174 11.1213C18.708 10.7308 18.708 10.0976 18.3174 9.70708C17.9269 9.31655 17.2937 9.31655 16.9032 9.70708L12.7176 13.8927C12.3271 14.2833 11.6939 14.2832 11.3034 13.8927L7.12132 9.71069C6.7308 9.32016 6.09763 9.32016 5.70711 9.71069Z"
+                                    fill="#F2F2F2"></path>
+                            </g>
+                        </svg></span>
+                </div>
+                <ul id="videos_sous" class="element_sous_liste">
+                    <li>Comment ajouter mes vidéos dans l'éditeur ?</li>
+                    <li>Quels formats de vidéo sont acceptés ?</li>
+                    <li>Comment supprimer une vidéo dont je ne me sers plus ?</li>
+                </ul>
+                <!-- -------- -->
+                <!-- SAUVEGARDE ET EXPORT -->
+                <!-- -------- -->
+                <div class="element_liste" id="export">
+                    <div class="element_nom">Sauvegarde et Export</div>
+                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            transform="rotate(270)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M5.70711 9.71069C5.31658 10.1012 5.31658 10.7344 5.70711 11.1249L10.5993 16.0123C11.3805 16.7927 12.6463 16.7924 13.4271 16.0117L18.3174 11.1213C18.708 10.7308 18.708 10.0976 18.3174 9.70708C17.9269 9.31655 17.2937 9.31655 16.9032 9.70708L12.7176 13.8927C12.3271 14.2833 11.6939 14.2832 11.3034 13.8927L7.12132 9.71069C6.7308 9.32016 6.09763 9.32016 5.70711 9.71069Z"
+                                    fill="#F2F2F2"></path>
+                            </g>
+                        </svg></span>
+                </div>
+                <ul id="export_sous" class="element_sous_liste">
+                    <li>Comment sauvegarder mon travail ?</li>
+                    <li>Comment charger un ancien projet ?</li>
+                    <li>Puis-je tester mon film interactif ?</li>
+                    <li>Comment faire une sauvegarde locale (sur mon PC) ?</li>
+                </ul>
+                <!-- -------- -->
+                <!-- RACCOURCIS -->
+                <!-- -------- -->
+                <div class="element_liste" id="racc">
+                    <div class="element_nom">Raccourcis Clavier</div>
+                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            transform="rotate(270)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M5.70711 9.71069C5.31658 10.1012 5.31658 10.7344 5.70711 11.1249L10.5993 16.0123C11.3805 16.7927 12.6463 16.7924 13.4271 16.0117L18.3174 11.1213C18.708 10.7308 18.708 10.0976 18.3174 9.70708C17.9269 9.31655 17.2937 9.31655 16.9032 9.70708L12.7176 13.8927C12.3271 14.2833 11.6939 14.2832 11.3034 13.8927L7.12132 9.71069C6.7308 9.32016 6.09763 9.32016 5.70711 9.71069Z"
+                                    fill="#F2F2F2"></path>
+                            </g>
+                        </svg></span>
+                </div>
+                <ul id="racc_sous" class="element_sous_liste">
+                    <li>Cheat sheet</li>
+                </ul>
+                <!------ -------- ------>
+                <!-- AIDE TECHNIQUE -->
+                <!---- -------- ------->
+                <div class="element_liste" id="aide">
+                    <div class="element_nom">Dépannage (Questions Techniques)</div>
+                    <span><svg width="64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            transform="rotate(270)">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M5.70711 9.71069C5.31658 10.1012 5.31658 10.7344 5.70711 11.1249L10.5993 16.0123C11.3805 16.7927 12.6463 16.7924 13.4271 16.0117L18.3174 11.1213C18.708 10.7308 18.708 10.0976 18.3174 9.70708C17.9269 9.31655 17.2937 9.31655 16.9032 9.70708L12.7176 13.8927C12.3271 14.2833 11.6939 14.2832 11.3034 13.8927L7.12132 9.71069C6.7308 9.32016 6.09763 9.32016 5.70711 9.71069Z"
+                                    fill="#F2F2F2"></path>
+                            </g>
+                        </svg></span>
+                </div>
+                <ul id="aide_sous" class="element_sous_liste">
+                    <li>Pourquoi ai-je un écran rouge "STOP !" ?</li>
+                    <li>Le bouton "Jouer" reste grisé/inactif.</li>
+                    <li>Mes câbles sont bizarres (courbes ou droits).</li>
                 </ul>
             </div>
         </div>
+
+
         <div class="right_main">
             <div class="right_main">
                 <!-- StorySwitch présentation -->
@@ -88,69 +208,155 @@
 
                 </section>
 
-                <!-- Création ->
+                <!-- INTERFACE ->
                 <- sous-sections -->
-                <section id="importer_dossier"><b>Importer un dossier de vidéos</b>
-                    <p>Pour commencer un projet, cliquez sur "Charger le dossier Vidéos" et sélectionnez le dossier
-                        contenant vos vidéos. </p>
-                    <p>Conseil : Nommez vos fichiers clairement pour vous y retrouver (ex : intro.mp4,
-                        choixA.mp4).</p>
+                <section><b>Comment se déplacer dans la zone de travail (le fond quadrillé) ?</b>
+                    <p>Maintenez la Barre Espace enfoncée et glissez la souris (clic gauche), ou utilisez le clic de la
+                        molette de la souris.</p>
                 </section>
-                <section id="relier_sequences"><b>Relier les séquences (Interface à nœuds)</b>
-                    <p>Ajouter un nœud en cliquant sur le bouton: chaque nœud contient : une entrée (rond vert), une
-                        vidéo, la durée du choix et en dessous, les boutons de
-                        choix. Vous pouvez créer plusieurs choix, un seul ou aucun.</p>
-                    <p><i>Exemple d'un noeud : </i></p>
-                    <img style="width: 300px;" src="img/noeud.png" alt="Noeud">
-                    <p>Relier les choix : chaque choix possède un petit rond jaune. Pour connecter ce choix à la vidéo
-                        suivante, cliquez sur ce rond et faites-le glisser jusqu'au nœud correspondant (rond vert) de la
-                        vidéo suivante.
-                    </p>
-                    <p><i>Exemple de noeuds reliés : </i></p>
-                    <img src="img/relier.png" style="width: 500px" alt="Noeuds Reliés">
-                    <p>Répétez le processus pour chaque séquence afin de construire votre film interactif étape par
-                        étape.</p>
-
+                <section><b>Comment zoomer ou dézoomer ?</b>
+                    <p>Utilisez la molette de la souris. Le niveau de zoom actuel est affiché en bas à droite (ex:
+                        100%).</p>
                 </section>
-                <section id="duree_choix"><b>Définir la durée des choix</b>
-                    <p>Chaque nœud de choix possède une durée exprimée en millisecondes (1000ms=1s) : c'est le
-                        temps laissé au spectateur pour sélectionner une option lors du visionnage.</p>
+                <section><b>Je suis perdu dans le vide, comment revenir aux scènes ?</b>
+                    <p>Faites un clic droit n'importe où sur le fond et choisissez "Recentrer Vue".</p>
                 </section>
-                <section id="exporter_projet"><b>Exporter un projet</b>
-                    <p>Une fois votre film interactif terminé, exportez-le au format <code>.json</code> pour pouvoir le
-                        visionner dans le Lecteur en appuyant sur le bouton prévu à cet effet "Exporter JSON".</p>
+                <section><b>À quoi sert la petite carte en bas à gauche (Minimap) ?</b>
+                    <p>C'est un aperçu global de votre projet. Le cadre bleu représente ce que vous voyez actuellement à
+                        l'écran. Vous pouvez désactiver cette vue dans les Paramètres (rouage).</p>
                 </section>
 
-                <!-- Visionnage interactif ->
+                <!-- Gestion des Scènes (Nœuds) ->
                  <-- sous-sections -->
-                <section id="importer_projet"><b>Importer un projet</b>
-                    <p>Pour visionner un film interactif, importez un fichier <code>.json</code> ou chargez celui que
-                        vous venez d'exporter depuis l'Éditeur.</p>
-                    <p>Cliquez sur "Lancer le lecteur" puis "Commencer
-                        l'aventure".</p>
+                <section><b>Comment créer une nouvelle scène ?</b>
+                    <p>Cliquez sur le bouton "+ Scène" en haut, ou faites un Clic Droit sur le fond et choisissez
+                        "Ajouter Scène".</p>
                 </section>
-                <section id="controles_lecteur"><b>Contrôles du lecteur</b>
-                    <p>Pendant le visionnage, vous pouvez :</p>
-                    <ul>
-                        <li>Mettre en pause : bouton en haut à droite ou en appuyant sur la touche Espace</li>
-                        <li>Plein écran : en appuyant sur le bouton dédié</li>
-                        <li>Lecture normale : reprise automatique après une pause</li>
-                    </ul>
+                <section><b>Comment renommer une scène (ex: "Intro", "Fin A") ?</b>
+                    <p>Double-cliquez sur le titre de la boîte (en haut du nœud) ou faites un clic droit sur le nœud et
+                        choisissez "Renommer".</p>
                 </section>
-                <section id="fonctionnement_choix"><b>Fonctionnement des choix interactifs</b>
-                    <p>À la fin de chaque séquence :</p>
-                    <ul>
-                        <li>Les choix apparaissent en bas de l'écran.</li>
-                        <li>Un timer se lance automatiquement et une animation autour de la vidéo indique le temps
-                            restant pour choisir.</li>
-                    </ul>
-                    <p><i>Attention : </i>Le timer ne peut pas être mis en pause un fois lancé, même si la vidéo est
-                        mise en
-                        pause.</p>
-                    <p>Si aucun choix n'est fait à temps, un choix est sélectionné aléatoirement.</p>
-                    <p>Pour faire un choix, cliquez sur un bouton avant la fin du timer.</p>
-                    <p>Si la séquence n'a pas de choix alors c'est la fin !</p>
+                <section><b>Comment associer une vidéo à une scène ?</b>
+                    <p>Dans la boîte de la scène, utilisez le menu déroulant pour choisir une vidéo parmi celles
+                        présentes dans la Médiathèque.</p>
                 </section>
+                <section><b>À quoi sert le champ avec l'icône horloge ?</b>
+                    <p>C'est la durée (en secondes) avant que l'action par défaut ne se déclenche si l'utilisateur ne
+                        clique rien.</p>
+                </section>
+                <section><b>Comment dupliquer une scène existante pour gagner du temps ?</b>
+                    <p>Faites un clic droit sur la scène et choisissez "Dupliquer", ou sélectionnez-la et faites Ctrl +
+                        C puis Ctrl + V.</p>
+                </section>
+
+                <!-- Création de l'Interactivité ->
+                 <--------- sous-sections-------- -->
+                <section><b>Comment créer un choix pour le spectateur ?</b>
+                    <p>Dans une scène, cliquez sur le petit "+" bleu à côté de "CHOIX". Vous pouvez ajouter jusqu'à 4
+                        choix maximum.</p>
+                </section>
+                <section><b>Comment relier deux scènes entre elles ?</b>
+                    <p>Cliquez sur le rond coloré à droite d'un choix (sortie) et maintenez le clic jusqu'au rond vert
+                        "Entrée" de la scène suivante.</p>
+                </section>
+                <section><b>Comment supprimer un lien (câble) entre deux scènes ?</b>
+                    <p>Cliquez directement sur le câble (il devient plus épais au survol). Une confirmation vous sera
+                        demandée.</p>
+                </section>
+                <section><b>Je veux créer une nouvelle scène directement liée à un choix, c'est possible ?</b>
+                    <p>Oui ! Tirez un câble depuis une sortie (rond orange/jaune) et relâchez-le dans le vide. Un menu
+                        apparaîtra pour créer une "Scène liée" instantanément.</p>
+                </section>
+                <!-- Gestion des Médias (Vidéos) -->
+                <!-- --------sous-section------- -->
+                <section><b>Comment ajouter mes vidéos dans l'éditeur ?</b>
+                    <p>Cliquez sur le bouton "Médiathèque". Vous pouvez soit cliquer sur "Ajouter des vidéos", soit
+                        glisser-déposer vos fichiers vidéo directement dans la fenêtre depuis votre ordinateur.</p>
+                </section>
+                <section><b>Quels formats de vidéo sont acceptés ?</b>
+                    <p>(À préciser selon ton serveur, mais ton input HTML dit accept="video/*"). Généralement MP4 ou
+                        WebM.</p>
+                </section>
+                <section><b>Comment supprimer une vidéo dont je ne me sers plus ?</b>
+                    <p>Dans la Médiathèque, cliquez sur l'icône "Poubelle" à côté du nom du fichier. Attention : cela la
+                        supprime pour tout le monde.</p>
+                </section>
+                <!------ Sauvegarde et Export------- -->
+                <!-- --------sous-section------- -->
+                <section><b>Comment sauvegarder mon travail ?</b>
+                    <p>Cliquez sur le bouton violet "Sauvegarder". Donnez un nom à votre fichier .json (ex:
+                        projet_v1.json) et confirmez..</p>
+                </section>
+                <section><b>Comment charger un ancien projet ?</b>
+                    <p>Allez dans le menu "Données" > "Importer / Charger". Sélectionnez votre fichier dans la liste
+                        déroulante "Charger depuis le serveur".</p>
+                </section>
+                <section><b>Puis-je tester mon film interactif ?</b>
+                    <p>Oui, une fois le projet sauvegardé, le bouton vert "Jouer" en haut à droite s'active. Il ouvre le
+                        lecteur dans un nouvel onglet.</p>
+                </section>
+                <section><b>Comment faire une sauvegarde locale (sur mon PC) ?</b>
+                    <p>Dans le menu "Données", cliquez sur "Voir JSON Brut", puis "Copier". Vous pouvez coller ce texte
+                        dans un fichier texte sur votre ordinateur pour le conserver.</p>
+                </section>
+
+                <!------  Raccourcis Clavier------- -->
+                <!-- --------sous-section------- -->
+                <section><b>Cheat sheet</b>
+                    <table>
+                        <tr>
+                            <th>Action</th>
+                            <th>Raccourcis</th>
+                        </tr>
+                        <tr>
+                            <td>Annuler (Undo)</td>
+                            <td>Ctrl + Z</td>
+                        </tr>
+                        <tr>
+                            <td>Rétablir (Redo)</td>
+                            <td>Ctrl + Y</td>
+                        </tr>
+                        <tr>
+                            <td>Copier Scène(s)</td>
+                            <td>Ctrl + C</td>
+                        </tr>
+                        <tr>
+                            <td>Coller Scène(s)</td>
+                            <td>Ctrl + V</td>
+                        </tr>
+                        <tr>
+                            <td>Supprimer sélection</td>
+                            <td>Touche Suppr (Delete)</td>
+                        </tr>
+                        <tr>
+                            <td>Sélection multiple</td>
+                            <td>Shift + Clic ou Shift + Glisser (cadre de sélection)</td>
+                        </tr>
+                        <tr>
+                            <td>Panoramique (Pan)</td>
+                            <td>Espace + Clic Gauche</td>
+                        </tr>
+                        <tr>
+                            <td>Mode "Grille"</td>
+                            <td>Magnétisme activé par défaut (Snap), désactivable dans les paramètres</td>
+                        </tr>
+                    </table>
+                </section>
+
+                <!-- Dépannage -->
+                <!-- sous-section -->
+                <section><b>Pourquoi ai-je un écran rouge "STOP !" ?</b>
+                    <p>Vous avez ouvert le fichier directement (file://). Vous devez passer par votre serveur local (ex:
+                        Laragon/Wamp) via une adresse type http://localhost/....</p>
+                </section>
+                <section><b>Le bouton "Jouer" reste grisé/inactif.</b>
+                    <p>Vous devez d'abord Sauvegarder le projet sur le serveur pour générer le lien de lecture.</p>
+                </section>
+                <section><b>Mes câbles sont bizarres (courbes ou droits).</b>
+                    <p>Vous pouvez changer le style des lignes (Courbe de Bézier ou Droite) dans le menu Paramètres
+                        (icône roue dentée).</p>
+                </section>
+
             </div>
 
         </div>
