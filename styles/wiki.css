@@ -34,8 +34,8 @@ main {
     flex-direction: column;
     padding-bottom: 0px;
     border-right: solid 2px #F2F2F2;
-    min-height: 100vh;
-    overflow-y: auto;    
+    height: 100dvh;
+    overflow-y: auto;
 }
 
 .menu_liste {
