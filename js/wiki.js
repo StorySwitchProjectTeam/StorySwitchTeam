@@ -5,6 +5,7 @@ const li = document.querySelectorAll(".element_sous_liste li");
 const span = document.querySelectorAll(".element_liste span");
 const section = document.querySelectorAll(".right_main section");
 const fermer_listes = document.querySelector(".fermer_listes");
+const  titreSection = document.querySelector(".titre_section");
 
 
 // Affcher les sous listes
@@ -52,6 +53,7 @@ document.addEventListener("DOMContentLoaded", e=>{
     span[0].classList.add("open_span");
     sous_liste[0].style.display = "flex";
     li[0].classList.add('li_active');
+    titreSection.textContent = li[0].textContent;
 })
 
 // Fermer toutes les listes
