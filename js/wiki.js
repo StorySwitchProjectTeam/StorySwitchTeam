@@ -38,6 +38,8 @@ li.forEach(function(item, index) {
         if (section[index]) {
             section[index].style.display = "block";
         }
+        titreSection.textContent = this.textContent;
+        // 4. Gérer les classes actives
         li.forEach(l => l.classList.remove('li_active'));
         this.classList.add('li_active');
     });
