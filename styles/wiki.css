@@ -27,6 +27,8 @@ main {
     display: flex;
 }
 
+/************* Menu ****************/
+
 .menu_wiki {
     width: 350px;
     background: #2F2A2A;
@@ -36,6 +38,43 @@ main {
     border-right: solid 2px #F2F2F2;
     height: 100dvh;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #5863FF transparent;
+}
+
+.menu_wiki::-webkit-scrollbar-track {
+    background: #2F2A2A;
+    border-radius: 4px;
+}
+
+.menu_wiki::-webkit-scrollbar-thumb {
+    background: #5863FF;
+    border-radius: 4px;
+}
+
+.fermer_listes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin: 15px 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: solid 3px #F2F2F2;
+}
+
+.fermer_listes:hover {
+    background: #5863FF50;
+}
+
+.fermer_listes span {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 .menu_liste {
@@ -61,7 +100,6 @@ main {
 
 .element_liste_open {
     background: #5863FF !important;
-    ;
 }
 
 .element_liste span {
@@ -106,6 +144,12 @@ span svg {
 .element_sous_liste li:hover::after {
     width: 100%;
 }
+
+.li_active::after {
+    width: 100% !important;
+}
+
+/************* Partie Gauche ****************/
 
 .right_main {
     flex: 1;
@@ -164,4 +208,21 @@ span svg {
     text-decoration: none;
     display: inline-block;
     text-align: center;
+}
+
+table, tr, td {
+    border: solid 1px #F2F2F2;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 20px 20px;
+}
+
+tr:nth-child(2n) {
+    background: #F2F2F210;
+}
+
+td:nth-child(2n) {
+    font-weight: bold;
 }
